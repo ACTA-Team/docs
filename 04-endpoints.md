@@ -7,7 +7,7 @@ The ACTA API provides a comprehensive set of RESTful endpoints for managing veri
 ## Base URL
 
 - **Development**: `http://localhost:3000`
-- **Production**: `https://api.yourdomain.com`
+- **Production**: `https://acta.up.railway.app`
 
 ## Response Format
 
@@ -150,17 +150,19 @@ Content-Type: application/json
 
 **Example cURL:**
 ```bash
-curl -X POST http://localhost:3000/v1/credentials \
+curl -X POST https://acta.up.railway.app/v1/credentials \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
-    "data": {
-      "holder": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      "credentialType": "AcademicDegree",
-      "claims": {
-        "degree": "Bachelor of Science",
-        "major": "Computer Science"
-      }
-    }
+    "issuer": "GCKFBEIYTKP6RCZX6LROC7CWLZQYLKJ4KQPQKJLPQJLPQJLPQJLPQJLP",
+    "subject": "GDQNYC2PDNPQN2VDMNCQJLPQJLPQJLPQJLPQJLPQJLPQJLPQJLPQJLP",
+    "credentialData": {
+      "name": "John Doe",
+      "degree": "Bachelor of Science",
+      "university": "Example University",
+      "graduationDate": "2023-06-15"
+    },
+    "expirationDate": "2024-06-15T00:00:00Z"
   }'
 ```
 
@@ -201,7 +203,8 @@ GET /v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ
 
 **Example cURL:**
 ```bash
-curl -X GET http://localhost:3000/v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ
+curl -X GET https://acta.up.railway.app/v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ \
+  -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 ---
@@ -253,9 +256,10 @@ Content-Type: application/json
 
 **Example cURL:**
 ```bash
-curl -X PATCH http://localhost:3000/v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status \
+curl -X PATCH https://acta.up.railway.app/v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status \
   -H "Content-Type: application/json" \
-  -d '{"status": "Revoked"}'
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"status": "revoked", "reason": "Credential no longer valid"}'
 ```
 
 ---
@@ -298,7 +302,8 @@ GET /v1/credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abc
 
 **Example cURL:**
 ```bash
-curl -X GET http://localhost:3000/v1/credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
+curl -X GET https://acta.up.railway.app/v1/credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456 \
+  -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 ---
@@ -439,7 +444,7 @@ All examples in this documentation use curl commands that you can run directly i
 ```javascript
 const axios = require('axios');
 
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = 'https://acta.up.railway.app/v1';
 
 // Create a credential
 async function createCredential(credentialData) {

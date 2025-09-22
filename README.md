@@ -40,7 +40,7 @@ To get started with the ACTA API:
 
 4. **Test the API**:
    ```bash
-   curl http://localhost:3000/health
+   curl https://acta.up.railway.app/v1/health
    ```
 
 ## Architecture Overview

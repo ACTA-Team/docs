@@ -13,7 +13,7 @@ This section provides practical examples and real-world use cases for the ACTA A
 ```javascript
 const axios = require('axios');
 
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = 'https://acta.up.railway.app/v1';
 
 async function createAcademicCredential() {
   try {
@@ -227,7 +227,7 @@ class CredentialVerifier {
 }
 
 // Usage
-const verifier = new CredentialVerifier('http://localhost:3000');
+const verifier = new CredentialVerifier('https://acta.up.railway.app/v1');
 
 async function verifyExample() {
   const contractId = 'CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ';
@@ -344,7 +344,7 @@ async function createStudentBatch() {
     }
   }));
 
-  const manager = new BatchCredentialManager('http://localhost:3000');
+  const manager = new BatchCredentialManager('https://acta.up.railway.app/v1');
   const results = await manager.createBatchCredentials(credentialsData);
 
   console.log('Batch creation results:');
@@ -442,7 +442,7 @@ class CredentialStatusManager {
 
 // Example usage
 async function manageCredentialStatuses() {
-  const manager = new CredentialStatusManager('http://localhost:3000');
+  const manager = new CredentialStatusManager('https://acta.up.railway.app/v1');
 
   // Revoke a credential
   await manager.revokeCredential(
@@ -523,7 +523,7 @@ function createCredentialVerificationMiddleware(apiBaseUrl) {
 const express = require('express');
 const app = express();
 
-const verifyCredential = createCredentialVerificationMiddleware('http://localhost:3000');
+const verifyCredential = createCredentialVerificationMiddleware('https://acta.up.railway.app/v1');
 
 app.get('/protected-resource', verifyCredential, (req, res) => {
   res.json({
@@ -701,7 +701,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 
 class ACTAClient:
-    def __init__(self, base_url: str = "http://localhost:3000"):
+    def __init__(self, base_url: str = "https://acta.up.railway.app/v1"):
         self.base_url = base_url.rstrip('/')
         self.session = requests.Session()
         self.session.headers.update({
