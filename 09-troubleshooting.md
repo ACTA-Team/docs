@@ -543,7 +543,7 @@ When encountering issues, follow this systematic approach:
    - Review configuration changes
    - Verify dependency updates
 
-If issues persist, check the GitHub issues page or contact support with:
+If issues persist, contact support with:
 - Error messages and logs
 - Steps to reproduce
 - Environment details

@@ -354,10 +354,8 @@ docker-compose down
 
 If you encounter issues not covered here:
 
-1. Check the [GitHub Issues](https://github.com/your-org/ACTA-api/issues)
-2. Review the application logs for detailed error messages
-3. Consult the [Stellar Developer Documentation](https://developers.stellar.org/)
-4. Join the [Stellar Community Discord](https://discord.gg/stellar)
+1. Review the application logs for detailed error messages
+2. Consult the [Stellar Developer Documentation](https://developers.stellar.org/)
 
 ---
 
