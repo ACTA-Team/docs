@@ -1,0 +1,70 @@
+{
+  "title": "ACTA API Documentation",
+  "description": "Comprehensive documentation for the ACTA API - A Stellar blockchain-based credential management system",
+  "author": "ACTA Development Team",
+  "language": "en",
+  "gitbook": ">=3.0.0",
+  "root": ".",
+  "structure": {
+    "readme": "README.md",
+    "summary": "SUMMARY.md"
+  },
+  "plugins": [
+    "highlight",
+    "search",
+    "sharing",
+    "fontsettings",
+    "livereload",
+    "copy-code-button",
+    "expandable-chapters",
+    "anchors",
+    "github",
+    "edit-link",
+    "prism",
+    "-lunr",
+    "search-plus"
+  ],
+  "pluginsConfig": {
+    "github": {
+      "url": "https://github.com/your-org/acta-api"
+    },
+    "edit-link": {
+      "base": "https://github.com/your-org/acta-api-docs/edit/main",
+      "label": "Edit This Page"
+    },
+    "sharing": {
+      "facebook": false,
+      "twitter": true,
+      "google": false,
+      "weibo": false,
+      "instapaper": false,
+      "vk": false,
+      "all": [
+        "twitter",
+        "linkedin"
+      ]
+    },
+    "fontsettings": {
+      "theme": "white",
+      "family": "sans",
+      "size": 2
+    },
+    "prism": {
+      "css": [
+        "prismjs/themes/prism-tomorrow.css"
+      ]
+    }
+  },
+  "variables": {
+    "version": "1.0.0",
+    "api_base_url": "http://localhost:3000/api",
+    "stellar_network": "testnet"
+  },
+  "links": {
+    "sidebar": {
+      "GitHub Repository": "https://github.com/your-org/acta-api",
+      "Stellar Documentation": "https://developers.stellar.org/",
+      "Support": "mailto:support@acta-api.com"
+    }
+  }
+}
