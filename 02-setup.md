@@ -97,7 +97,7 @@ API_KEY_SECRET=your-api-key-secret-here
 # ==================
 
 # Allowed origins for CORS (comma-separated)
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001,https://yourdomain.com
+ALLOWED_ORIGINS=http://localhost:8000,http://localhost:3001,https://yourdomain.com
 
 # Database Configuration (if applicable)
 # ====================================
@@ -169,7 +169,7 @@ Look for these log messages:
 npm run dev
 ```
 
-The API will be available at `http://localhost:3000` (or your configured PORT).
+The API will be available at `http://localhost:8000` (or your configured PORT).
 
 ### 2. Verify Installation
 
@@ -177,10 +177,10 @@ Test the API endpoints:
 
 ```bash
 # Test the root endpoint
-curl http://localhost:3000/
+curl http://localhost:8000/
 
 # Test the health endpoint
-curl http://localhost:3000/health
+curl http://localhost:8000/health
 ```
 
 Expected responses:

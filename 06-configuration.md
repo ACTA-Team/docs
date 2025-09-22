@@ -41,7 +41,7 @@ These variables have default values but can be customized:
 #### PORT
 - **Type**: Number
 - **Description**: The port number for the API server
-- **Default**: `3000`
+- **Default**: `8000`
 - **Example**: `8080`
 
 #### NODE_ENV
@@ -64,7 +64,7 @@ STELLAR_SOROBAN_URL=https://soroban-testnet.stellar.org
 STELLAR_NETWORK_PASSPHRASE=Test SDF Network ; September 2015
 
 # Server Configuration
-PORT=3000
+PORT=8000
 NODE_ENV=development
 
 # Optional: Logging Configuration
@@ -100,7 +100,7 @@ STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
 STELLAR_SOROBAN_URL=https://soroban-testnet.stellar.org
 STELLAR_NETWORK_PASSPHRASE=Test SDF Network ; September 2015
-PORT=3000
+PORT=8000
 NODE_ENV=development
 LOG_LEVEL=debug
 ```
@@ -113,7 +113,7 @@ STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
 STELLAR_SOROBAN_URL=https://soroban-testnet.stellar.org
 STELLAR_NETWORK_PASSPHRASE=Test SDF Network ; September 2015
-PORT=3000
+PORT=8000
 NODE_ENV=staging
 LOG_LEVEL=info
 ```
@@ -177,7 +177,7 @@ The API includes configurable CORS settings for cross-origin requests:
 ```typescript
 // src/config/cors.ts
 const corsOptions = {
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:8000'],
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -189,8 +189,8 @@ const corsOptions = {
 #### ALLOWED_ORIGINS
 - **Type**: Comma-separated URLs
 - **Description**: Origins allowed to make requests to the API
-- **Example**: `http://localhost:3000,https://app.yourdomain.com`
-- **Default**: `http://localhost:3000`
+- **Example**: `http://localhost:8000,https://app.yourdomain.com`
+- **Default**: `http://localhost:8000`
 
 ## Security Headers Configuration
 
@@ -254,7 +254,7 @@ services:
 ```bash
 docker run -d \
   --name acta-api \
-  -p 3000:3000 \
+  -p 8000:8000 \
   -e STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
   -e STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org \
   -e NODE_ENV=production \
@@ -267,7 +267,7 @@ docker run -d \
 # Use environment file
 docker run -d \
   --name acta-api \
-  -p 3000:3000 \
+  -p 8000:8000 \
   --env-file .env \
   acta-api:latest
 ```
@@ -290,7 +290,7 @@ docker run -d \
         },
         {
           "name": "PORT",
-          "value": "3000"
+          "value": "8000"
         }
       ],
       "secrets": [
@@ -325,12 +325,12 @@ spec:
       - name: acta-api
         image: your-registry/acta-api:latest
         ports:
-        - containerPort: 3000
+        - containerPort: 8000
         env:
         - name: NODE_ENV
           value: "production"
         - name: PORT
-          value: "3000"
+          value: "8000"
         - name: STELLAR_HORIZON_URL
           value: "https://horizon.stellar.org"
         envFrom:

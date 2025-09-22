@@ -6,7 +6,7 @@ The ACTA API provides a comprehensive set of RESTful endpoints for managing veri
 
 ## Base URL
 
-- **Development**: `http://localhost:3000`
+- **Development**: `http://localhost:8000`
 - **Production**: `https://acta.up.railway.app`
 
 ## Response Format
@@ -380,7 +380,7 @@ RateLimit-Reset: 1642694400
 
 1. **Create a credential:**
 ```bash
-curl -X POST http://localhost:3000/v1/credentials \
+curl -X POST http://localhost:8000/v1/credentials \
   -H "Content-Type: application/json" \
   -d '{
     "data": {
@@ -417,12 +417,12 @@ curl -X POST http://localhost:3000/v1/credentials \
 
 3. **Verify the credential:**
 ```bash
-curl -X GET http://localhost:3000/v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ
+curl -X GET http://localhost:8000/v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ
 ```
 
 4. **Update credential status:**
 ```bash
-curl -X PATCH http://localhost:3000/v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status \
+curl -X PATCH http://localhost:8000/v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status \
   -H "Content-Type: application/json" \
   -d '{"status": "Suspended"}'
 ```

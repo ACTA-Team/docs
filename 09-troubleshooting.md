@@ -165,14 +165,14 @@ console.log('Account signers:', account.signers);
 1. **Verify API Key (if implemented):**
 ```bash
 curl -H "Authorization: Bearer YOUR_API_KEY" \
-     http://localhost:3000/api/credentials
+     http://localhost:8000/api/credentials
 ```
 
 2. **Check CORS Configuration:**
 ```javascript
 // Ensure your domain is in allowed origins
 const corsOptions = {
-  origin: ['https://yourdomain.com', 'http://localhost:3000'],
+  origin: ['https://yourdomain.com', 'http://localhost:8000'],
   credentials: true
 };
 ```
@@ -410,7 +410,7 @@ A: If you lose your secret key, you cannot recover it or access your account. Al
 **Q: How do I update a credential?**
 A: Use the PATCH endpoint to update credential status:
 ```bash
-curl -X PATCH http://localhost:3000/api/credentials/CONTRACT_ID/status \
+curl -X PATCH http://localhost:8000/api/credentials/CONTRACT_ID/status \
   -H "Content-Type: application/json" \
   -d '{"status": "Revoked"}'
 ```
@@ -421,7 +421,7 @@ A: Credentials on the blockchain are immutable, but you can revoke them by updat
 **Q: How do I verify a credential?**
 A: Use the verification endpoint with the credential hash:
 ```bash
-curl http://localhost:3000/api/credentials/hash/CREDENTIAL_HASH
+curl http://localhost:8000/api/credentials/hash/CREDENTIAL_HASH
 ```
 
 ### Development Questions
@@ -523,7 +523,7 @@ When encountering issues, follow this systematic approach:
    curl -I https://horizon.stellar.org
    
    # Test API health
-   curl http://localhost:3000/health
+   curl http://localhost:8000/health
    ```
 
 4. **Check Resources:**

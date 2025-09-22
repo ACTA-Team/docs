@@ -65,11 +65,11 @@ RUN chown -R nodejs:nodejs /usr/src/app
 USER nodejs
 
 # Expose port
-EXPOSE 3000
+EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
+  CMD curl -f http://localhost:8000/health || exit 1
 
 # Start the application
 CMD ["npm", "start"]
@@ -84,15 +84,15 @@ services:
   acta-api:
     build: .
     ports:
-      - "3000:3000"
+      - "8000:8000"
     environment:
       - NODE_ENV=production
-      - PORT=3000
+      - PORT=8000
     env_file:
       - .env.production
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -166,7 +166,7 @@ docker-compose up -d --scale acta-api=3
       "image": "your-account.dkr.ecr.region.amazonaws.com/acta-api:latest",
       "portMappings": [
         {
-          "containerPort": 3000,
+          "containerPort": 8000,
           "protocol": "tcp"
         }
       ],
@@ -177,7 +177,7 @@ docker-compose up -d --scale acta-api=3
         },
         {
           "name": "PORT",
-          "value": "3000"
+          "value": "8000"
         }
       ],
       "secrets": [
@@ -195,7 +195,7 @@ docker-compose up -d --scale acta-api=3
         }
       },
       "healthCheck": {
-        "command": ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"],
+        "command": ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"],
         "interval": 30,
         "timeout": 5,
         "retries": 3,
@@ -216,7 +216,7 @@ aws ecs create-service \
   --desired-count 2 \
   --launch-type FARGATE \
   --network-configuration "awsvpcConfiguration={subnets=[subnet-12345,subnet-67890],securityGroups=[sg-abcdef],assignPublicIp=ENABLED}" \
-  --load-balancers targetGroupArn=arn:aws:elasticloadbalancing:region:account:targetgroup/acta-api-tg,containerName=acta-api,containerPort=3000
+  --load-balancers targetGroupArn=arn:aws:elasticloadbalancing:region:account:targetgroup/acta-api-tg,containerName=acta-api,containerPort=8000
 ```
 
 #### Using AWS Lambda (Serverless)
@@ -298,7 +298,7 @@ gcloud run deploy acta-api \
   --allow-unauthenticated \
   --set-env-vars NODE_ENV=production \
   --set-secrets STELLAR_SECRET_KEY=stellar-secret-key:latest \
-  --port 3000 \
+  --port 8000 \
   --memory 1Gi \
   --cpu 1 \
   --min-instances 1 \
@@ -328,12 +328,12 @@ spec:
       - name: acta-api
         image: gcr.io/PROJECT_ID/acta-api:latest
         ports:
-        - containerPort: 3000
+        - containerPort: 8000
         env:
         - name: NODE_ENV
           value: "production"
         - name: PORT
-          value: "3000"
+          value: "8000"
         - name: STELLAR_SECRET_KEY
           valueFrom:
             secretKeyRef:
@@ -349,13 +349,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: 3000
+            port: 8000
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
-            port: 3000
+            port: 8000
           initialDelaySeconds: 5
           periodSeconds: 5
 ---
@@ -368,7 +368,7 @@ spec:
     app: acta-api
   ports:
   - port: 80
-    targetPort: 3000
+    targetPort: 8000
   type: LoadBalancer
 ```
 
@@ -386,8 +386,8 @@ az container create \
   --name acta-api \
   --image your-registry/acta-api:latest \
   --dns-name-label acta-api-unique \
-  --ports 3000 \
-  --environment-variables NODE_ENV=production PORT=3000 \
+  --ports 8000 \
+  --environment-variables NODE_ENV=production PORT=8000 \
   --secure-environment-variables STELLAR_SECRET_KEY=your-secret-key \
   --cpu 1 \
   --memory 2
@@ -414,7 +414,7 @@ az webapp create \
 az webapp config appsettings set \
   --resource-group acta-api-rg \
   --name acta-api-webapp \
-  --settings NODE_ENV=production PORT=3000 STELLAR_SECRET_KEY=your-secret-key
+  --settings NODE_ENV=production PORT=8000 STELLAR_SECRET_KEY=your-secret-key
 ```
 
 ## Load Balancing and High Availability
@@ -424,9 +424,9 @@ az webapp config appsettings set \
 ```nginx
 upstream acta_api {
     least_conn;
-    server acta-api-1:3000 max_fails=3 fail_timeout=30s;
-    server acta-api-2:3000 max_fails=3 fail_timeout=30s;
-    server acta-api-3:3000 max_fails=3 fail_timeout=30s;
+    server acta-api-1:8000 max_fails=3 fail_timeout=30s;
+    server acta-api-2:8000 max_fails=3 fail_timeout=30s;
+    server acta-api-3:8000 max_fails=3 fail_timeout=30s;
 }
 
 server {
@@ -508,9 +508,9 @@ frontend acta_frontend
 backend acta_backend
     balance roundrobin
     option httpchk GET /health
-    server api1 acta-api-1:3000 check
-    server api2 acta-api-2:3000 check
-    server api3 acta-api-3:3000 check
+    server api1 acta-api-1:8000 check
+    server api2 acta-api-2:8000 check
+    server api3 acta-api-3:8000 check
 ```
 
 ## Monitoring and Observability
@@ -713,7 +713,7 @@ module.exports = Sentry;
 ```bash
 # .env.production
 NODE_ENV=production
-PORT=3000
+PORT=8000
 
 # Stellar Configuration
 STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -960,7 +960,7 @@ echo "Waiting for deployment to complete..."
 sleep 30
 
 # Health check
-if curl -f http://localhost:3000/health; then
+if curl -f http://localhost:8000/health; then
   echo "✅ Deployment successful"
 else
   echo "❌ Deployment failed, rolling back..."
