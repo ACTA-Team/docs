@@ -39,10 +39,7 @@
       "weibo": false,
       "instapaper": false,
       "vk": false,
-      "all": [
-        "twitter",
-        "linkedin"
-      ]
+      "all": ["twitter", "linkedin"]
     },
     "fontsettings": {
       "theme": "white",
@@ -50,9 +47,7 @@
       "size": 2
     },
     "prism": {
-      "css": [
-        "prismjs/themes/prism-tomorrow.css"
-      ]
+      "css": ["prismjs/themes/prism-tomorrow.css"]
     }
   },
   "variables": {
@@ -61,10 +56,9 @@
     "stellar_network": "testnet"
   },
   "links": {
-    "sidebar": {
-      "GitHub Repository": "https://github.com/your-org/acta-api",
-      "Stellar Documentation": "https://developers.stellar.org/",
-      "Support": "mailto:support@acta-api.com"
-    }
+    "GitHub Repository": "https://github.com/your-org/acta-api",
+    "Stellar Documentation": "https://developers.stellar.org/",
+    "API Documentation": "https://acta.gitbook.io/docs",
+    "Support": "mailto:support@acta-api.com"
   }
 }

@@ -435,6 +435,8 @@ cp .env.example .env
 docker-compose up -d
 ```
 
+For detailed instructions, visit our [complete documentation](https://acta.gitbook.io/docs).
+
 **Q: How do I run tests?**
 A: Use npm to run the test suite:
 ```bash
@@ -549,4 +551,4 @@ If issues persist, check the GitHub issues page or contact support with:
 
 ---
 
-*This concludes the ACTA API documentation. For additional support, please refer to the [GitHub repository](https://github.com/your-org/acta-api) or contact the development team.*
+*This concludes the ACTA API documentation. For additional support, please refer to the [GitHub repository](https://github.com/your-org/acta-api), visit our [complete documentation](https://acta.gitbook.io/docs), or contact the development team.*

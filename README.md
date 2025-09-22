@@ -58,17 +58,18 @@ The ACTA API follows a modular architecture with clear separation of concerns:
 - **Examples**: Check [Examples and Use Cases](./07-examples.md) for practical implementations
 - **Issues**: For problems, consult [Troubleshooting and FAQ](./09-troubleshooting.md)
 - **Support**: Contact the development team for additional assistance
+- **Online Documentation**: Visit [https://acta.gitbook.io/docs](https://acta.gitbook.io/docs) for the latest version
 
 ---
 
 *This documentation is maintained by the ACTA development team and is regularly updated to reflect the latest API changes and best practices.*
 
-## Useful Links
+#### Useful Links
 
 - [Stellar Documentation](https://developers.stellar.org/)
 - [Soroban Smart Contracts](https://soroban.stellar.org/)
 - [API Repository](https://github.com/your-org/acta-api)
-- [Community Support](https://discord.gg/stellar-dev)
+- [Complete API Documentation](https://acta.gitbook.io/docs)
 
 ## Version
 
