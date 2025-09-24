@@ -192,7 +192,7 @@ Expected responses:
   "version": "1.0.0",
   "endpoints": {
     "health": "/health",
-    "credentials": "/v1/credentials"
+    "credentials": "/credentials"
   }
 }
 ```

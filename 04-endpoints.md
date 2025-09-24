@@ -49,7 +49,7 @@ GET /
   "version": "1.0.0",
   "endpoints": {
     "health": "/health",
-    "credentials": "/v1/credentials"
+    "credentials": "/credentials"
   }
 }
 ```
@@ -85,15 +85,15 @@ GET /health
 
 ## Credentials Endpoints
 
-All credential endpoints are prefixed with `/v1/credentials`.
+All credential endpoints are prefixed with `/credentials`.
 
-### POST /v1/credentials
+### POST /credentials
 
 Creates a new verifiable credential on the Stellar blockchain.
 
 **Request:**
 ```http
-POST /v1/credentials
+POST /credentials
 Content-Type: application/json
 
 {
@@ -150,7 +150,7 @@ Content-Type: application/json
 
 **Example cURL:**
 ```bash
-curl -X POST https://acta.up.railway.app/v1/credentials \
+curl -X POST https://acta.up.railway.app/credentials \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
@@ -168,13 +168,13 @@ curl -X POST https://acta.up.railway.app/v1/credentials \
 
 ---
 
-### GET /v1/credentials/:contractId
+### GET /credentials/:contractId
 
 Retrieves information about a specific credential by its contract ID.
 
 **Request:**
 ```http
-GET /v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ
+GET /credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ
 ```
 
 **Path Parameters:**
@@ -203,19 +203,19 @@ GET /v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ
 
 **Example cURL:**
 ```bash
-curl -X GET https://acta.up.railway.app/v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ \
+curl -X GET https://acta.up.railway.app/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 ---
 
-### PATCH /v1/credentials/:contractId/status
+### PATCH /credentials/:contractId/status
 
 Updates the status of an existing credential.
 
 **Request:**
 ```http
-PATCH /v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status
+PATCH /credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status
 Content-Type: application/json
 
 {
@@ -256,7 +256,7 @@ Content-Type: application/json
 
 **Example cURL:**
 ```bash
-curl -X PATCH https://acta.up.railway.app/v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status \
+curl -X PATCH https://acta.up.railway.app/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{"status": "revoked", "reason": "Credential no longer valid"}'
@@ -264,13 +264,13 @@ curl -X PATCH https://acta.up.railway.app/v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQ
 
 ---
 
-### GET /v1/credentials/hash/:hash
+### GET /credentials/hash/:hash
 
 Retrieves credential information by its data hash.
 
 **Request:**
 ```http
-GET /v1/credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
+GET /credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
 ```
 
 **Path Parameters:**
@@ -302,7 +302,7 @@ GET /v1/credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abc
 
 **Example cURL:**
 ```bash
-curl -X GET https://acta.up.railway.app/v1/credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456 \
+curl -X GET https://acta.up.railway.app/credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456 \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -323,7 +323,7 @@ curl -X GET https://acta.up.railway.app/v1/credentials/hash/a1b2c3d4e5f678901234
 ```json
 {
   "error": "Endpoint not found",
-  "path": "/v1/invalid-endpoint",
+  "path": "/invalid-endpoint",
   "method": "GET"
 }
 ```
@@ -380,7 +380,7 @@ RateLimit-Reset: 1642694400
 
 1. **Create a credential:**
 ```bash
-curl -X POST http://localhost:8000/v1/credentials \
+curl -X POST http://localhost:8000/credentials \
   -H "Content-Type: application/json" \
   -d '{
     "data": {
@@ -417,12 +417,12 @@ curl -X POST http://localhost:8000/v1/credentials \
 
 3. **Verify the credential:**
 ```bash
-curl -X GET http://localhost:8000/v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ
+curl -X GET http://localhost:8000/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ
 ```
 
 4. **Update credential status:**
 ```bash
-curl -X PATCH http://localhost:8000/v1/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status \
+curl -X PATCH http://localhost:8000/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status \
   -H "Content-Type: application/json" \
   -d '{"status": "Suspended"}'
 ```
@@ -449,7 +449,7 @@ const API_BASE_URL = 'https://acta.up.railway.app/v1';
 // Create a credential
 async function createCredential(credentialData) {
   try {
-    const response = await axios.post(`${API_BASE_URL}/v1/credentials`, {
+    const response = await axios.post(`${API_BASE_URL}/credentials`, {
       data: credentialData
     });
     return response.data;
@@ -462,7 +462,7 @@ async function createCredential(credentialData) {
 // Get credential by contract ID
 async function getCredential(contractId) {
   try {
-    const response = await axios.get(`${API_BASE_URL}/v1/credentials/${contractId}`);
+    const response = await axios.get(`${API_BASE_URL}/credentials/${contractId}`);
     return response.data;
   } catch (error) {
     console.error('Error getting credential:', error.response.data);
