@@ -1,14 +1,8 @@
-# Services and Business Logic
-
-<div align="center">
-
-![Services](https://img.shields.io/badge/Services-Business%20Logic-orange?style=for-the-badge&logo=gear&logoColor=white)
-
-</div>
+# Services
 
 ## Overview
 
-The ACTA API is built with a modular service architecture that separates business logic from API endpoints. This section details the core services that power the credential management system.
+The ACTA API is built on a modular service architecture that separates concerns and provides clear interfaces between different components. This section details the core services that power the API functionality.
 
 ---
 

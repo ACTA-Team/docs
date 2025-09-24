@@ -1,31 +1,17 @@
 # Introduction
 
-<div align="center">
-
-![ACTA Logo](https://img.shields.io/badge/ACTA-Autonomous%20Credential%20Trust%20Architecture-blue?style=for-the-badge&logo=stellar&logoColor=white)
-
-</div>
-
 ## What is ACTA API?
 
 The **ACTA API** (Autonomous Credential Trust Architecture) is a comprehensive REST API designed to manage verifiable credentials on the Stellar blockchain. It provides a secure, scalable, and decentralized solution for creating, storing, and verifying digital credentials using Soroban smart contracts.
 
-<div align="center">
-
 ### **Mission Statement**
 *Empowering trust through decentralized credential management on the Stellar blockchain*
-
-</div>
 
 ---
 
 ## System Architecture
 
-<div align="center">
-
 ### Modern, microservices-inspired architecture built on Stellar
-
-</div>
 
 ```mermaid
 graph LR

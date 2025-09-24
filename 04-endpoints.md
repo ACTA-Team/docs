@@ -1,14 +1,8 @@
 # API Endpoints
 
-<div align="center">
-
-![API Endpoints](https://img.shields.io/badge/API-Endpoints-blue?style=for-the-badge&logo=api&logoColor=white)
-
-</div>
-
 ## Overview
 
-This section provides comprehensive documentation for all available API endpoints in the ACTA API. Each endpoint includes detailed information about request/response formats, parameters, and example usage.
+The ACTA API provides RESTful endpoints for managing verifiable credentials on the Stellar blockchain. All endpoints follow consistent patterns for authentication, request/response formats, and error handling.
 
 ### **Base URLs**
 
@@ -674,7 +668,7 @@ All examples in this documentation use curl commands that you can run directly i
 ```javascript
 const axios = require('axios');
 
-const API_BASE_URL = 'https://acta.up.railway.app/v1';
+const API_BASE_URL = 'https://api.acta.network/v1';
 
 // Create a credential
 async function createCredential(credentialData) {

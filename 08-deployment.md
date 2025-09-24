@@ -1,16 +1,8 @@
-# Deployment
-
-<div align="center">
-
-![Deployment](https://img.shields.io/badge/Deployment-Production%20Ready-blue?style=for-the-badge&logo=rocket&logoColor=white)
-
-</div>
+# Deployment Guide
 
 ## Overview
 
-This guide covers deploying the ACTA API to production environments, including cloud platforms, containerization, monitoring, and best practices for scalable and secure deployments.
-
----
+This comprehensive guide covers deploying the ACTA API to various environments, from development to production. It includes best practices for security, scalability, and monitoring.
 
 ## **Production Environment Setup**
 

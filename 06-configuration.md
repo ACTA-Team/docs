@@ -1,14 +1,8 @@
 # Configuration
 
-<div align="center">
-
-![Configuration](https://img.shields.io/badge/Configuration-Environment-purple?style=for-the-badge&logo=settings&logoColor=white)
-
-</div>
-
 ## Overview
 
-The ACTA API uses environment variables for configuration management, allowing for flexible deployment across different environments. This section covers all configuration options and best practices.
+The ACTA API uses environment variables for configuration management, ensuring secure and flexible deployment across different environments. This section covers all configuration options and best practices.
 
 ---
 

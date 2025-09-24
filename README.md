@@ -1,17 +1,7 @@
 # ACTA API Documentation
 
-<div align="center">
-
-![ACTA API](https://img.shields.io/badge/ACTA%20API-v1.0.0-blue?style=for-the-badge&logo=stellar&logoColor=white)
-![Stellar](https://img.shields.io/badge/Stellar-Blockchain-7D4CDB?style=for-the-badge&logo=stellar&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
-
-**Complete Documentation for Stellar Verifiable Credentials Management API**
-
-*A robust and secure REST API for creating, managing, and verifying verifiable credentials using Stellar blockchain and Soroban smart contracts.*
-
-</div>
+**ACTA API**
+*Autonomous Credential Trust Architecture*
 
 ---
 
@@ -33,11 +23,7 @@ This documentation is organized into the following sections:
 
 ## Quick Start
 
-<div align="center">
-
 ### Get up and running in 3 simple steps!
-
-</div>
 
 ### 1️⃣ **Clone and Setup**
 ```bash
@@ -72,51 +58,11 @@ curl https://acta.up.railway.app/health
 curl http://localhost:8000/health
 ```
 
-<div align="center">
-
 **Congratulations!** Your ACTA API is now running!
-
-</div>
 
 ## Architecture Overview
 
-<div align="center">
-
-### The ACTA API follows a modular architecture with clear separation of concerns
-
-</div>
-
-```mermaid
-graph TB
-    A[Client Applications] --> B[ACTA API Gateway]
-    B --> C[Business Logic Layer]
-    C --> D[Database Service]
-    C --> E[Stellar Network]
-    
-    subgraph "Client Layer"
-        A1[Web Apps]
-        A2[Mobile Apps] 
-        A3[dApps]
-    end
-    
-    subgraph "API Layer"
-        B1[Security Middleware]
-        B2[Validation Layer]
-        B3[REST Endpoints]
-    end
-    
-    subgraph "Service Layer"
-        C1[Credential Service]
-        C2[Stellar Service]
-        C3[Database Service]
-    end
-    
-    subgraph "Infrastructure"
-        D1[Supabase Database]
-        E1[Stellar Horizon]
-        E2[Soroban Contracts]
-    end
-```
+The ACTA API follows a modular architecture designed for scalability and maintainability:
 
 ### **Core Components**
 
@@ -130,42 +76,25 @@ graph TB
 
 ## Getting Help
 
-<div align="center">
+**Documentation**: Check our comprehensive documentation
+**Community**: Join our community discussions  
+**Issues**: Report bugs and request features
+**Support**: Get help from our development team
 
-### Need assistance? We've got you covered!
+## Useful Links
 
-</div>
-
-| Resource | Description | Link |
-|----------|-------------|------|
-| **Documentation** | Start with comprehensive overview | [Introduction](./01-introduction.md) |
-| **Examples** | Practical implementations and patterns | [Examples and Use Cases](./07-examples.md) |
-| **Troubleshooting** | Common issues and solutions | [Troubleshooting and FAQ](./09-troubleshooting.md) |
-| **Online Docs** | Latest version and updates | [https://acta.gitbook.io/docs](https://acta.gitbook.io/docs) |
-| **Support** | Direct assistance from our team | Contact development team |
+**Stellar Documentation**: Learn about Stellar blockchain
+**Soroban Smart Contracts**: Explore Soroban development
+**GitHub Repository**: Access the source code
+**Complete Documentation**: Full documentation on GitBook
 
 ---
 
-<div align="center">
-
-### **Useful Links**
-
-[![Stellar Docs](https://img.shields.io/badge/Stellar-Documentation-7D4CDB?style=for-the-badge&logo=stellar&logoColor=white)](https://developers.stellar.org/)
-[![Soroban](https://img.shields.io/badge/Soroban-Smart%20Contracts-FF6B6B?style=for-the-badge&logo=rust&logoColor=white)](https://soroban.stellar.org/)
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/your-org/acta-api)
-[![GitBook](https://img.shields.io/badge/GitBook-Complete%20Docs-3884FF?style=for-the-badge&logo=gitbook&logoColor=white)](https://acta.gitbook.io/docs)
-
-</div>
-
 ---
-
-<div align="center">
 
 *This documentation is maintained by the ACTA development team and is regularly updated to reflect the latest API changes and best practices.*
 
 **Version 1.0.0** | **Last Updated: January 2025** | **Status: Active**
-
-</div>
 
 **Current Version**: 1.0.0  
 **Last Updated**: January 2024  
