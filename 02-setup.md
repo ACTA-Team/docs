@@ -155,9 +155,9 @@ npm run dev
 
 Look for these log messages:
 ```
-✅ Using Stellar account: GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-🌐 Stellar Network: Testnet
-🔗 Horizon URL: https://horizon-testnet.stellar.org
+Using Stellar account: GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+Stellar Network: Testnet
+Horizon URL: https://horizon-testnet.stellar.org
 ```
 
 ## Development Setup

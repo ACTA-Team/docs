@@ -1,63 +1,49 @@
-# Configuration and Environment Variables
+# Configuration
+
+<div align="center">
+
+![Configuration](https://img.shields.io/badge/Configuration-Environment-purple?style=for-the-badge&logo=settings&logoColor=white)
+
+</div>
 
 ## Overview
 
-The ACTA API uses environment variables for configuration management, allowing for flexible deployment across different environments (development, staging, production) without code changes. This approach follows the [12-Factor App](https://12factor.net/config) methodology for configuration management.
+The ACTA API uses environment variables for configuration management, allowing for flexible deployment across different environments. This section covers all configuration options and best practices.
 
-## Environment Variables
+---
 
-### Required Variables
+## **Environment Variables**
 
-These environment variables must be set for the API to function properly:
+### **Required Variables**
 
-#### STELLAR_SECRET_KEY
-- **Type**: String (56 characters, starts with 'S')
-- **Description**: The Stellar secret key used for signing transactions
-- **Example**: `SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX`
-- **Security**: Keep this secret and never commit to version control
+These variables must be set for the API to function properly:
 
-#### STELLAR_HORIZON_URL
-- **Type**: URL
-- **Description**: The Horizon server URL for Stellar network operations
-- **Development**: `https://horizon-testnet.stellar.org`
-- **Production**: `https://horizon.stellar.org`
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `STELLAR_SECRET_KEY` | Stellar account secret key | `SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX` |
+| `STELLAR_HORIZON_URL` | Horizon server URL | `https://horizon-testnet.stellar.org` |
 
-### Optional Variables
+### **Optional Variables**
 
 These variables have default values but can be customized:
 
-#### STELLAR_SOROBAN_URL
-- **Type**: URL
-- **Description**: The Soroban RPC server URL for smart contract operations
-- **Default**: `https://soroban-testnet.stellar.org`
-- **Production**: `https://soroban.stellar.org`
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `PORT` | Server port | `8000` | `3000` |
+| `NODE_ENV` | Environment mode | `development` | `production` |
+| `STELLAR_SOROBAN_URL` | Soroban RPC URL | `https://soroban-testnet.stellar.org` | Custom URL |
+| `STELLAR_NETWORK_PASSPHRASE` | Network identifier | `Test SDF Network ; September 2015` | Custom passphrase |
 
-#### STELLAR_NETWORK_PASSPHRASE
-- **Type**: String
-- **Description**: The network passphrase for transaction signing
-- **Default**: `Test SDF Network ; September 2015` (Testnet)
-- **Production**: `Public Global Stellar Network ; September 2015`
+---
 
-#### PORT
-- **Type**: Number
-- **Description**: The port number for the API server
-- **Default**: `8000`
-- **Example**: `8080`
+## **Environment Setup**
 
-#### NODE_ENV
-- **Type**: String
-- **Description**: The application environment
-- **Values**: `development`, `staging`, `production`
-- **Default**: `development`
+### **Development Environment**
 
-## Environment Configuration Files
-
-### .env.example
-
-The repository includes a `.env.example` file that serves as a template:
+Create a `.env` file in your project root:
 
 ```bash
-# Stellar Network Configuration
+# Stellar Configuration
 STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
 STELLAR_SOROBAN_URL=https://soroban-testnet.stellar.org
@@ -67,77 +53,40 @@ STELLAR_NETWORK_PASSPHRASE=Test SDF Network ; September 2015
 PORT=8000
 NODE_ENV=development
 
-# Optional: Logging Configuration
-LOG_LEVEL=info
-```
-
-### Creating Your .env File
-
-1. Copy the example file:
-```bash
-cp .env.example .env
-```
-
-2. Update the values with your actual configuration:
-```bash
-# Edit the .env file with your preferred editor
-nano .env
-```
-
-3. Ensure the file is not tracked by Git:
-```bash
-# .env should already be in .gitignore
-echo ".env" >> .gitignore
-```
-
-## Environment-Specific Configurations
-
-### Development Environment
-
-```bash
-# .env.development
-STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
-STELLAR_SOROBAN_URL=https://soroban-testnet.stellar.org
-STELLAR_NETWORK_PASSPHRASE=Test SDF Network ; September 2015
-PORT=8000
-NODE_ENV=development
+# Logging
 LOG_LEVEL=debug
 ```
 
-### Staging Environment
+### **Production Environment**
+
+For production deployments, set environment variables through your hosting platform:
 
 ```bash
-# .env.staging
+# Railway.app example
+railway variables set STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+railway variables set STELLAR_HORIZON_URL=https://horizon.stellar.org
+railway variables set NODE_ENV=production
+```
+
+### **Testing Environment**
+
+For testing, use a separate configuration:
+
+```bash
+# .env.test
 STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
-STELLAR_SOROBAN_URL=https://soroban-testnet.stellar.org
-STELLAR_NETWORK_PASSPHRASE=Test SDF Network ; September 2015
-PORT=8000
-NODE_ENV=staging
-LOG_LEVEL=info
+NODE_ENV=test
+PORT=8001
 ```
 
-### Production Environment
+---
 
-```bash
-# .env.production
-STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-STELLAR_HORIZON_URL=https://horizon.stellar.org
-STELLAR_SOROBAN_URL=https://soroban.stellar.org
-STELLAR_NETWORK_PASSPHRASE=Public Global Stellar Network ; September 2015
-PORT=80
-NODE_ENV=production
-LOG_LEVEL=warn
-```
+## **Configuration Validation**
 
-## Configuration Validation
+The API validates required environment variables on startup:
 
-The API performs validation of environment variables at startup:
-
-### Required Variable Check
-
-```typescript
+```javascript
 const requiredEnvVars = [
   'STELLAR_SECRET_KEY',
   'STELLAR_HORIZON_URL'
@@ -146,91 +95,164 @@ const requiredEnvVars = [
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
 if (missingVars.length > 0) {
-  throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+  console.error(`Missing required environment variables: ${missingVars.join(', ')}`);
+  process.exit(1);
 }
 ```
 
-### Format Validation
+---
 
-```typescript
-// Validate Stellar secret key format
-const secretKey = process.env.STELLAR_SECRET_KEY;
-if (!secretKey || secretKey.length !== 56 || !secretKey.startsWith('S')) {
-  throw new Error('Invalid STELLAR_SECRET_KEY format');
-}
+## **Stellar Network Configuration**
 
-// Validate URL format
-const horizonUrl = process.env.STELLAR_HORIZON_URL;
-try {
-  new URL(horizonUrl);
-} catch (error) {
-  throw new Error('Invalid STELLAR_HORIZON_URL format');
-}
+### **Testnet Configuration**
+
+For development and testing:
+
+```bash
+STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+STELLAR_SOROBAN_URL=https://soroban-testnet.stellar.org
+STELLAR_NETWORK_PASSPHRASE=Test SDF Network ; September 2015
 ```
 
-## CORS Configuration
+**Features:**
+- Free XLM from friendbot
+- No real value transactions
+- Faster transaction confirmation
+- Reset periodically
 
-The API includes configurable CORS settings for cross-origin requests:
+### **Mainnet Configuration**
 
-### Default CORS Settings
+For production use:
 
-```typescript
-// src/config/cors.ts
-const corsOptions = {
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:8000'],
-  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+```bash
+STELLAR_HORIZON_URL=https://horizon.stellar.org
+STELLAR_SOROBAN_URL=https://soroban-mainnet.stellar.org
+STELLAR_NETWORK_PASSPHRASE=Public Global Stellar Network ; September 2015
+```
+
+**Requirements:**
+- Real XLM for transactions
+- Higher security standards
+- Production-grade monitoring
+
+---
+
+## **Security Best Practices**
+
+### **Secret Key Management**
+
+**Do:**
+- Store secret keys in environment variables
+- Use different keys for different environments
+- Rotate keys regularly
+- Use key management services in production
+
+**Don't:**
+- Hardcode keys in source code
+- Commit keys to version control
+- Share keys in plain text
+- Use production keys in development
+
+### **Environment Separation**
+
+```bash
+# Development
+STELLAR_SECRET_KEY=SDEV_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+# Staging
+STELLAR_SECRET_KEY=SSTG_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+# Production
+STELLAR_SECRET_KEY=SPRD_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+
+---
+
+## **Configuration Loading**
+
+### **Environment File Loading**
+
+The API uses `dotenv` to load configuration:
+
+```javascript
+// Load environment variables
+require('dotenv').config();
+
+// Configuration object
+const config = {
+  port: process.env.PORT || 8000,
+  nodeEnv: process.env.NODE_ENV || 'development',
+  stellar: {
+    secretKey: process.env.STELLAR_SECRET_KEY,
+    horizonUrl: process.env.STELLAR_HORIZON_URL,
+    sorobanUrl: process.env.STELLAR_SOROBAN_URL || 'https://soroban-testnet.stellar.org',
+    networkPassphrase: process.env.STELLAR_NETWORK_PASSPHRASE || 'Test SDF Network ; September 2015'
+  }
 };
 ```
 
-### Environment Variables for CORS
+### **Configuration Validation**
 
-#### ALLOWED_ORIGINS
-- **Type**: Comma-separated URLs
-- **Description**: Origins allowed to make requests to the API
-- **Example**: `http://localhost:8000,https://app.yourdomain.com`
-- **Default**: `http://localhost:8000`
+```javascript
+function validateConfig(config) {
+  const errors = [];
 
-## Security Headers Configuration
+  if (!config.stellar.secretKey) {
+    errors.push('STELLAR_SECRET_KEY is required');
+  }
 
-The API includes security headers that can be configured:
+  if (!config.stellar.horizonUrl) {
+    errors.push('STELLAR_HORIZON_URL is required');
+  }
 
-```typescript
-// Security headers configuration
-const securityHeaders = {
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
-  'X-XSS-Protection': '1; mode=block',
-  'Strict-Transport-Security': process.env.NODE_ENV === 'production' 
-    ? 'max-age=31536000; includeSubDomains' 
-    : undefined
-};
+  if (errors.length > 0) {
+    throw new Error(`Configuration errors: ${errors.join(', ')}`);
+  }
+
+  return config;
+}
 ```
 
-## Logging Configuration
+---
 
-### LOG_LEVEL
-- **Type**: String
-- **Description**: Minimum log level to output
-- **Values**: `error`, `warn`, `info`, `debug`
-- **Default**: `info`
+## **Deployment Configurations**
 
-### Log Format
+### **Railway.app**
 
-The API uses structured logging with different formats for different environments:
+Railway automatically detects Node.js applications. Set environment variables in the dashboard:
 
-```typescript
-const logFormat = process.env.NODE_ENV === 'production' 
-  ? 'combined'  // Apache combined log format
-  : 'dev';      // Colored output for development
+1. Go to your project dashboard
+2. Click on "Variables" tab
+3. Add required environment variables
+4. Deploy your application
+
+### **Heroku**
+
+Configure environment variables using the Heroku CLI:
+
+```bash
+heroku config:set STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+heroku config:set STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+heroku config:set NODE_ENV=production
 ```
 
-## Docker Configuration
+### **Docker**
 
-When using Docker, environment variables can be passed through various methods:
+Use environment variables in your Docker configuration:
 
-### Docker Compose
+```dockerfile
+# Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+
+EXPOSE 8000
+CMD ["npm", "start"]
+```
 
 ```yaml
 # docker-compose.yml
@@ -239,209 +261,157 @@ services:
   acta-api:
     build: .
     ports:
-      - "3000:3000"
+      - "8000:8000"
     environment:
       - STELLAR_SECRET_KEY=${STELLAR_SECRET_KEY}
       - STELLAR_HORIZON_URL=${STELLAR_HORIZON_URL}
-      - STELLAR_SOROBAN_URL=${STELLAR_SOROBAN_URL}
       - NODE_ENV=production
-    env_file:
-      - .env
 ```
 
-### Docker Run
+### **Kubernetes**
 
-```bash
-docker run -d \
-  --name acta-api \
-  -p 8000:8000 \
-  -e STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
-  -e STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org \
-  -e NODE_ENV=production \
-  acta-api:latest
-```
-
-### Environment File with Docker
-
-```bash
-# Use environment file
-docker run -d \
-  --name acta-api \
-  -p 8000:8000 \
-  --env-file .env \
-  acta-api:latest
-```
-
-## Cloud Deployment Configuration
-
-### AWS ECS
-
-```json
-{
-  "family": "acta-api",
-  "containerDefinitions": [
-    {
-      "name": "acta-api",
-      "image": "your-registry/acta-api:latest",
-      "environment": [
-        {
-          "name": "NODE_ENV",
-          "value": "production"
-        },
-        {
-          "name": "PORT",
-          "value": "8000"
-        }
-      ],
-      "secrets": [
-        {
-          "name": "STELLAR_SECRET_KEY",
-          "valueFrom": "arn:aws:secretsmanager:region:account:secret:stellar-secret-key"
-        }
-      ]
-    }
-  ]
-}
-```
-
-### Kubernetes
+Use ConfigMaps and Secrets for configuration:
 
 ```yaml
-apiVersion: apps/v1
-kind: Deployment
+# configmap.yaml
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: acta-api
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: acta-api
-  template:
-    metadata:
-      labels:
-        app: acta-api
-    spec:
-      containers:
-      - name: acta-api
-        image: your-registry/acta-api:latest
-        ports:
-        - containerPort: 8000
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: PORT
-          value: "8000"
-        - name: STELLAR_HORIZON_URL
-          value: "https://horizon.stellar.org"
-        envFrom:
-        - secretRef:
-            name: stellar-secrets
+  name: acta-config
+data:
+  STELLAR_HORIZON_URL: "https://horizon-testnet.stellar.org"
+  NODE_ENV: "production"
+  PORT: "8000"
 ```
 
-### Heroku
-
-```bash
-# Set environment variables
-heroku config:set STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-heroku config:set STELLAR_HORIZON_URL=https://horizon.stellar.org
-heroku config:set NODE_ENV=production
+```yaml
+# secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: acta-secrets
+type: Opaque
+data:
+  STELLAR_SECRET_KEY: <base64-encoded-secret-key>
 ```
 
-## Configuration Best Practices
+---
 
-### Security
+## **Configuration Monitoring**
 
-1. **Never commit secrets**: Use `.gitignore` to exclude `.env` files
-2. **Use secret management**: In production, use dedicated secret management services
-3. **Rotate keys regularly**: Implement key rotation policies
-4. **Principle of least privilege**: Only provide necessary permissions
+### **Health Checks**
 
-### Environment Separation
+Monitor configuration health:
 
-1. **Separate configurations**: Use different configurations for each environment
-2. **Validate early**: Validate configuration at application startup
-3. **Document requirements**: Clearly document all required variables
-4. **Use defaults wisely**: Provide sensible defaults for optional variables
+```javascript
+app.get('/health', async (req, res) => {
+  const health = {
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    stellar: {
+      network: process.env.STELLAR_NETWORK_PASSPHRASE?.includes('Test') ? 'testnet' : 'mainnet',
+      horizonUrl: process.env.STELLAR_HORIZON_URL
+    }
+  };
 
-### Monitoring
+  res.json(health);
+});
+```
 
-1. **Log configuration**: Log (non-sensitive) configuration at startup
-2. **Health checks**: Include configuration validation in health checks
-3. **Alerts**: Set up alerts for configuration-related failures
+### **Configuration Logging**
 
-## Troubleshooting Configuration Issues
+Log configuration on startup (without sensitive data):
 
-### Common Problems
+```javascript
+console.log('Starting ACTA API with configuration:');
+console.log(`- Environment: ${process.env.NODE_ENV}`);
+console.log(`- Port: ${process.env.PORT || 8000}`);
+console.log(`- Stellar Network: ${process.env.STELLAR_NETWORK_PASSPHRASE?.includes('Test') ? 'Testnet' : 'Mainnet'}`);
+console.log(`- Horizon URL: ${process.env.STELLAR_HORIZON_URL}`);
+```
+
+---
+
+## **Troubleshooting**
+
+### **Common Configuration Issues**
 
 #### Missing Environment Variables
 
-**Error**: `Missing required environment variables: STELLAR_SECRET_KEY`
+**Error:**
+```
+Missing required environment variables: STELLAR_SECRET_KEY
+```
 
-**Solution**: Ensure all required environment variables are set in your `.env` file or environment.
+**Solution:**
+1. Check if `.env` file exists
+2. Verify variable names are correct
+3. Ensure no extra spaces in variable definitions
 
 #### Invalid Secret Key Format
 
-**Error**: `Invalid STELLAR_SECRET_KEY format`
+**Error:**
+```
+Invalid Stellar secret key format
+```
 
-**Solution**: Verify that your secret key is 56 characters long and starts with 'S'.
+**Solution:**
+1. Verify the secret key starts with 'S'
+2. Check the key is 56 characters long
+3. Ensure no extra characters or spaces
 
 #### Network Connection Issues
 
-**Error**: `Failed to connect to Horizon server`
+**Error:**
+```
+Failed to connect to Stellar network
+```
 
-**Solution**: Check that `STELLAR_HORIZON_URL` is correct and accessible from your environment.
+**Solution:**
+1. Verify Horizon URL is accessible
+2. Check network connectivity
+3. Confirm the correct network (testnet/mainnet)
 
-#### CORS Issues
-
-**Error**: `CORS policy: No 'Access-Control-Allow-Origin' header`
-
-**Solution**: Add your frontend domain to the `ALLOWED_ORIGINS` environment variable.
-
-### Debugging Configuration
+### **Configuration Debugging**
 
 Enable debug logging to troubleshoot configuration issues:
 
 ```bash
-LOG_LEVEL=debug npm start
+NODE_ENV=development LOG_LEVEL=debug npm start
 ```
 
-This will output detailed information about the configuration loading process.
+---
 
-### Configuration Validation Script
+## **Best Practices**
 
-Create a script to validate your configuration:
+### **Environment Management**
 
-```typescript
-// scripts/validate-config.ts
-import { config } from 'dotenv';
+1. **Use separate configurations** for each environment
+2. **Document all variables** and their purposes
+3. **Validate configuration** on application startup
+4. **Use default values** where appropriate
+5. **Monitor configuration changes** in production
 
-config();
+### **Security Guidelines**
 
-const requiredVars = [
-  'STELLAR_SECRET_KEY',
-  'STELLAR_HORIZON_URL'
-];
+1. **Never commit secrets** to version control
+2. **Use environment-specific keys** for different stages
+3. **Implement key rotation** policies
+4. **Monitor access** to configuration systems
+5. **Use encrypted storage** for sensitive configuration
 
-// Validating configuration...
+### **Deployment Checklist**
 
-for (const varName of requiredVars) {
-  const value = process.env[varName];
-  if (!value) {
-    // Missing required variable: ${varName}
-    process.exit(1);
-  } else {
-    // Found required variable: ${varName}
-  }
-}
+Before deploying to production:
 
-// Configuration is valid!
-```
-
-Run the validation script:
-
-```bash
-npx ts-node scripts/validate-config.ts
-```
+- [ ] All required environment variables are set
+- [ ] Secret keys are production-grade
+- [ ] Network configuration matches target environment
+- [ ] Configuration validation passes
+- [ ] Health checks are working
+- [ ] Monitoring is configured
+- [ ] Backup procedures are in place
 
 ---
 

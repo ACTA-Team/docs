@@ -1,571 +1,931 @@
-# Troubleshooting and FAQ
+# Troubleshooting
+
+<div align="center">
+
+![Troubleshooting](https://img.shields.io/badge/Troubleshooting-Support%20Guide-red?style=for-the-badge&logo=bug&logoColor=white)
+
+</div>
 
 ## Overview
 
-This section provides solutions to common issues, error messages, and frequently asked questions when working with the ACTA API. Use this guide to quickly resolve problems and understand best practices.
+This comprehensive troubleshooting guide helps you diagnose and resolve common issues when working with the ACTA API, from setup problems to production deployment challenges.
 
-## Common Issues and Solutions
+---
 
-### 1. Stellar Network Connection Issues
+## **Common Setup Issues**
 
-#### Problem: "Failed to connect to Stellar Horizon"
+### **Installation Problems**
 
-**Symptoms:**
-- API returns 500 errors
-- Health check fails
-- Stellar operations timeout
+#### **Node.js Version Compatibility**
 
-**Solutions:**
+**Problem**: API fails to start with Node.js version errors.
 
-1. **Check Network Configuration:**
 ```bash
-# Verify Horizon URL is accessible
-curl -I https://horizon.stellar.org
+Error: The engine "node" is incompatible with this module
+```
 
-# Check environment variables
+**Solution**:
+```bash
+# Check your Node.js version
+node --version
+
+# Install the correct version (18.x or higher)
+nvm install 18
+nvm use 18
+
+# Or using Node Version Manager on Windows
+nvm install 18.17.0
+nvm use 18.17.0
+```
+
+#### **Dependency Installation Failures**
+
+**Problem**: npm install fails with permission or network errors.
+
+```bash
+npm ERR! code EACCES
+npm ERR! syscall access
+```
+
+**Solutions**:
+```bash
+# Clear npm cache
+npm cache clean --force
+
+# Use npm ci for clean install
+npm ci
+
+# Fix permissions (Linux/macOS)
+sudo chown -R $(whoami) ~/.npm
+
+# Use different registry if network issues
+npm install --registry https://registry.npmjs.org/
+```
+
+#### **Missing Environment Variables**
+
+**Problem**: API crashes on startup due to missing configuration.
+
+```bash
+Error: STELLAR_SECRET_KEY is required
+```
+
+**Solution**:
+```bash
+# Create .env file with required variables
+cp .env.example .env
+
+# Edit .env file with your values
+STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+STELLAR_SOROBAN_URL=https://soroban-testnet.stellar.org
+```
+
+---
+
+## **Stellar Network Issues**
+
+### **Connection Problems**
+
+#### **Horizon Server Unreachable**
+
+**Problem**: Cannot connect to Stellar Horizon server.
+
+```javascript
+Error: Network Error: Request failed with status code 503
+```
+
+**Diagnosis**:
+```bash
+# Test Horizon connectivity
+curl -I https://horizon-testnet.stellar.org/
+
+# Check if using correct network
 echo $STELLAR_HORIZON_URL
-echo $STELLAR_NETWORK_PASSPHRASE
 ```
 
-2. **Validate Network Passphrase:**
+**Solutions**:
 ```javascript
-// Testnet
-STELLAR_NETWORK_PASSPHRASE=Test SDF Network ; September 2015
-
-// Mainnet
-STELLAR_NETWORK_PASSPHRASE=Public Global Stellar Network ; September 2015
-```
-
-3. **Test Connection Programmatically:**
-```javascript
-const { Server } = require('stellar-sdk');
-
-async function testConnection() {
-  try {
-    const server = new Server(process.env.STELLAR_HORIZON_URL);
-    const ledger = await server.ledgers().limit(1).call();
-    // Connection successful - ledger sequence: ${ledger.records[0].sequence}
-    return { success: true, sequence: ledger.records[0].sequence };
-  } catch (error) {
-    // Connection failed - handle error appropriately
-    throw new Error(`Connection failed: ${error.message}`);
-  }
-}
-```
-
-#### Problem: "Account not found" or "Invalid account"
-
-**Symptoms:**
-- 404 errors when loading account
-- Operations fail with account errors
-
-**Solutions:**
-
-1. **Verify Account Exists:**
-```bash
-# Check account on Stellar Expert
-# Testnet: https://stellar.expert/explorer/testnet/account/YOUR_PUBLIC_KEY
-# Mainnet: https://stellar.expert/explorer/public/account/YOUR_PUBLIC_KEY
-```
-
-2. **Fund Account (Testnet):**
-```javascript
-// For testnet only
-const response = await fetch(`https://friendbot.stellar.org?addr=${publicKey}`);
-// Account funding status: ${response.ok ? 'successful' : 'failed'}
-return { funded: response.ok };
-```
-
-3. **Check Account Balance:**
-```javascript
-const account = await server.loadAccount(publicKey);
-// Account balances retrieved successfully
-return { balances: account.balances };
-```
-
-### 2. Smart Contract Issues
-
-#### Problem: "Contract not found" or "Invalid contract ID"
-
-**Symptoms:**
-- Contract operations fail
-- 404 errors when calling contract methods
-
-**Solutions:**
-
-1. **Verify Contract Deployment:**
-```javascript
-const { SorobanRpc } = require('stellar-sdk');
-
-async function checkContract(contractId) {
-  try {
-    const server = new SorobanRpc.Server(process.env.STELLAR_SOROBAN_URL);
-    const contract = await server.getContractData(contractId);
-    // Contract found and accessible
-    return { found: true, contract };
-  } catch (error) {
-    // Contract not found - verify deployment
-    throw new Error(`Contract not found: ${error.message}`);
-  }
-}
-```
-
-2. **Validate Contract ID Format:**
-```javascript
-// Contract ID should be 56 characters long and start with 'C'
-const isValidContractId = (id) => {
-  return /^C[A-Z0-9]{55}$/.test(id);
-};
-```
-
-3. **Check Contract Methods:**
-```javascript
-// List available contract methods
-const contractSpec = await server.getContractSpec(contractId);
-// Available methods retrieved successfully
-return { methods: contractSpec.methods };
-```
-
-#### Problem: "Transaction failed" or "Soroban transaction error"
-
-**Symptoms:**
-- Contract calls return errors
-- Transactions are rejected
-
-**Solutions:**
-
-1. **Check Transaction Fees:**
-```javascript
-// Increase fee for complex operations
-const transaction = new TransactionBuilder(account, {
-  fee: '1000000', // 0.1 XLM
-  networkPassphrase: Networks.TESTNET
-});
-```
-
-2. **Validate Function Parameters:**
-```javascript
-// Ensure parameters match contract expectations
-const params = [
-  nativeToScVal('credential_id', { type: 'string' }),
-  nativeToScVal(credentialData, { type: 'map' })
+// Use backup Horizon servers
+const horizonUrls = [
+  'https://horizon-testnet.stellar.org',
+  'https://horizon.stellar.org' // fallback
 ];
+
+// Implement retry logic
+async function connectWithRetry(urls, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    for (const url of urls) {
+      try {
+        const server = new Server(url);
+        await server.ledgers().limit(1).call();
+        return server;
+      } catch (error) {
+        console.warn(`Failed to connect to ${url}:`, error.message);
+      }
+    }
+    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+  }
+  throw new Error('All Horizon servers unreachable');
+}
 ```
 
-3. **Check Account Authorization:**
+#### **Soroban RPC Issues**
+
+**Problem**: Smart contract calls fail with RPC errors.
+
 ```javascript
-// Verify account has necessary permissions
-const account = await server.loadAccount(sourceKeypair.publicKey());
-// Account signers retrieved for verification
-return { signers: account.signers };
+Error: soroban-rpc: transaction submission failed
 ```
 
-### 3. API Authentication and Authorization
-
-#### Problem: "Unauthorized" or "Forbidden" errors
-
-**Symptoms:**
-- 401/403 HTTP status codes
-- Access denied messages
-
-**Solutions:**
-
-1. **Verify API Key (if implemented):**
+**Diagnosis**:
 ```bash
-curl -H "Authorization: Bearer YOUR_API_KEY" \
-     http://localhost:8000/api/credentials
+# Test Soroban RPC
+curl -X POST https://soroban-testnet.stellar.org \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}'
 ```
 
-2. **Check CORS Configuration:**
+**Solutions**:
 ```javascript
-// Ensure your domain is in allowed origins
-const corsOptions = {
-  origin: ['https://yourdomain.com', 'http://localhost:8000'],
-  credentials: true
-};
-```
+// Configure Soroban with proper timeout
+const sorobanServer = new SorobanRpc.Server(
+  process.env.STELLAR_SOROBAN_URL,
+  {
+    allowHttp: false,
+    timeout: 30000 // 30 seconds
+  }
+);
 
-3. **Validate Request Headers:**
-```javascript
-// Required headers for API requests
-const headers = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
-};
-```
-
-### 4. Rate Limiting Issues
-
-#### Problem: "Too Many Requests" (429 errors)
-
-**Symptoms:**
-- API returns 429 status code
-- Requests are being throttled
-
-**Solutions:**
-
-1. **Implement Exponential Backoff:**
-```javascript
-async function retryWithBackoff(fn, maxRetries = 3) {
+// Add retry mechanism for contract calls
+async function callContractWithRetry(operation, maxRetries = 3) {
   for (let i = 0; i < maxRetries; i++) {
     try {
-      return await fn();
+      return await operation();
     } catch (error) {
-      if (error.status === 429 && i < maxRetries - 1) {
-        const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
-      }
-      throw error;
+      if (i === maxRetries - 1) throw error;
+      console.warn(`Contract call attempt ${i + 1} failed:`, error.message);
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
   }
 }
 ```
 
-2. **Check Rate Limit Headers:**
+### **Account and Key Issues**
+
+#### **Invalid Secret Key Format**
+
+**Problem**: Secret key validation fails.
+
 ```javascript
-// Monitor rate limit status
-const response = await fetch('/api/credentials');
-const rateLimitInfo = {
-  remaining: response.headers.get('X-RateLimit-Remaining'),
-  reset: response.headers.get('X-RateLimit-Reset')
-};
-// Rate limit information retrieved
-return rateLimitInfo;
+Error: Invalid secret key format
 ```
 
-3. **Optimize Request Patterns:**
+**Solution**:
 ```javascript
-// Batch operations instead of individual requests
-const credentials = await Promise.all([
-  createCredential(data1),
-  createCredential(data2),
-  createCredential(data3)
-]);
+// Validate secret key format
+function validateSecretKey(secretKey) {
+  try {
+    const keypair = Keypair.fromSecret(secretKey);
+    console.log('Valid secret key for account:', keypair.publicKey());
+    return true;
+  } catch (error) {
+    console.error('Invalid secret key:', error.message);
+    return false;
+  }
+}
+
+// Check key format
+if (!validateSecretKey(process.env.STELLAR_SECRET_KEY)) {
+  throw new Error('Please provide a valid Stellar secret key');
+}
 ```
 
-### 5. Data Validation Errors
+#### **Insufficient Account Balance**
 
-#### Problem: "Invalid input data" or validation errors
+**Problem**: Transactions fail due to insufficient XLM balance.
 
-**Symptoms:**
-- 400 Bad Request errors
-- Validation error messages
-
-**Solutions:**
-
-1. **Validate Credential Data Structure:**
 ```javascript
-const credentialSchema = {
-  recipient: 'string', // Required
-  issuer: 'string',    // Required
-  credential_type: 'string', // Required
-  metadata: 'object'   // Optional
-};
+Error: tx_insufficient_balance
+```
 
-function validateCredential(data) {
-  const required = ['recipient', 'issuer', 'credential_type'];
-  const missing = required.filter(field => !data[field]);
+**Diagnosis**:
+```javascript
+// Check account balance
+async function checkAccountBalance(publicKey) {
+  try {
+    const server = new Server(process.env.STELLAR_HORIZON_URL);
+    const account = await server.loadAccount(publicKey);
+    
+    console.log('Account balances:');
+    account.balances.forEach(balance => {
+      console.log(`${balance.asset_type}: ${balance.balance}`);
+    });
+    
+    return account.balances;
+  } catch (error) {
+    console.error('Failed to load account:', error.message);
+    throw error;
+  }
+}
+```
+
+**Solutions**:
+```javascript
+// Fund testnet account
+async function fundTestnetAccount(publicKey) {
+  try {
+    const response = await fetch(
+      `https://friendbot.stellar.org?addr=${publicKey}`
+    );
+    
+    if (response.ok) {
+      console.log('Account funded successfully');
+    } else {
+      throw new Error('Failed to fund account');
+    }
+  } catch (error) {
+    console.error('Funding failed:', error.message);
+    throw error;
+  }
+}
+
+// For mainnet, ensure sufficient XLM balance
+const MIN_BALANCE = 10; // XLM
+async function ensureSufficientBalance(account) {
+  const xlmBalance = account.balances.find(b => b.asset_type === 'native');
+  const balance = parseFloat(xlmBalance.balance);
   
-  if (missing.length > 0) {
-    throw new Error(`Missing required fields: ${missing.join(', ')}`);
+  if (balance < MIN_BALANCE) {
+    throw new Error(`Insufficient balance: ${balance} XLM (minimum: ${MIN_BALANCE} XLM)`);
+  }
+}
+```
+
+---
+
+## **Smart Contract Issues**
+
+### **Contract Deployment Problems**
+
+#### **Contract Compilation Errors**
+
+**Problem**: Smart contract fails to compile.
+
+```bash
+Error: compilation failed
+```
+
+**Solutions**:
+```bash
+# Check Rust toolchain
+rustc --version
+cargo --version
+
+# Update Rust and Soroban CLI
+rustup update
+cargo install --locked soroban-cli
+
+# Clean and rebuild
+cargo clean
+soroban contract build
+```
+
+#### **Contract Deployment Failures**
+
+**Problem**: Contract deployment transaction fails.
+
+```javascript
+Error: Contract deployment failed with status: failed
+```
+
+**Diagnosis**:
+```bash
+# Check contract size
+ls -la target/wasm32-unknown-unknown/release/*.wasm
+
+# Verify contract is optimized
+soroban contract optimize --wasm target/wasm32-unknown-unknown/release/contract.wasm
+```
+
+**Solutions**:
+```javascript
+// Increase transaction timeout for deployment
+const transaction = new TransactionBuilder(account, {
+  fee: BASE_FEE,
+  networkPassphrase: Networks.TESTNET,
+  timebounds: {
+    minTime: 0,
+    maxTime: Math.floor(Date.now() / 1000) + 300 // 5 minutes
+  }
+});
+
+// Add proper error handling
+try {
+  const result = await server.submitTransaction(transaction);
+  console.log('Contract deployed:', result.hash);
+} catch (error) {
+  if (error.response?.data?.extras?.result_codes) {
+    console.error('Transaction failed:', error.response.data.extras.result_codes);
+  }
+  throw error;
+}
+```
+
+### **Contract Invocation Issues**
+
+#### **Function Call Failures**
+
+**Problem**: Contract function calls return errors.
+
+```javascript
+Error: Contract function 'create_credential' failed
+```
+
+**Debugging**:
+```javascript
+// Add detailed logging for contract calls
+async function debugContractCall(contractId, functionName, args) {
+  console.log('Contract Call Debug:');
+  console.log('- Contract ID:', contractId);
+  console.log('- Function:', functionName);
+  console.log('- Arguments:', args);
+  
+  try {
+    const result = await contract.call(functionName, ...args);
+    console.log('- Result:', result);
+    return result;
+  } catch (error) {
+    console.error('- Error:', error.message);
+    if (error.response) {
+      console.error('- Response:', error.response.data);
+    }
+    throw error;
+  }
+}
+```
+
+**Solutions**:
+```javascript
+// Implement proper argument encoding
+function encodeContractArgs(args) {
+  return args.map(arg => {
+    if (typeof arg === 'string') {
+      return nativeToScVal(arg, { type: 'string' });
+    } else if (typeof arg === 'number') {
+      return nativeToScVal(arg, { type: 'u64' });
+    } else if (Buffer.isBuffer(arg)) {
+      return nativeToScVal(arg, { type: 'bytes' });
+    }
+    return arg;
+  });
+}
+
+// Add retry logic for contract calls
+async function callContractWithRetry(contract, method, args, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await contract.call(method, ...encodeContractArgs(args));
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      console.warn(`Contract call retry ${i + 1}:`, error.message);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+}
+```
+
+---
+
+## **API Endpoint Issues**
+
+### **Authentication Problems**
+
+#### **Invalid API Key**
+
+**Problem**: Requests fail with authentication errors.
+
+```json
+{
+  "error": "Invalid API key",
+  "code": 401
+}
+```
+
+**Solutions**:
+```javascript
+// Verify API key format
+function validateApiKey(apiKey) {
+  if (!apiKey || typeof apiKey !== 'string') {
+    throw new Error('API key must be a non-empty string');
+  }
+  
+  if (apiKey.length < 32) {
+    throw new Error('API key appears to be too short');
   }
   
   return true;
 }
-```
 
-2. **Check Data Types:**
-```javascript
-// Ensure proper data types
-const credentialData = {
-  recipient: String(recipient),
-  issuer: String(issuer),
-  credential_type: String(credentialType),
-  metadata: typeof metadata === 'object' ? metadata : {}
-};
-```
-
-3. **Validate Stellar Addresses:**
-```javascript
-const { StrKey } = require('stellar-sdk');
-
-function isValidStellarAddress(address) {
-  try {
-    return StrKey.isValidEd25519PublicKey(address);
-  } catch {
-    return false;
-  }
-}
-```
-
-### 6. Performance Issues
-
-#### Problem: Slow API responses or timeouts
-
-**Symptoms:**
-- Long response times
-- Request timeouts
-- High server load
-
-**Solutions:**
-
-1. **Implement Caching:**
-```javascript
-// Cache frequently accessed data
-const cache = new Map();
-
-async function getCachedCredential(hash) {
-  if (cache.has(hash)) {
-    return cache.get(hash);
+// Check API key in request headers
+app.use('/api', (req, res, next) => {
+  const apiKey = req.headers['x-api-key'] || req.headers['authorization']?.replace('Bearer ', '');
+  
+  if (!validateApiKey(apiKey)) {
+    return res.status(401).json({ error: 'Invalid API key format' });
   }
   
-  const credential = await fetchCredential(hash);
-  cache.set(hash, credential);
-  
-  // Auto-expire after 5 minutes
-  setTimeout(() => cache.delete(hash), 5 * 60 * 1000);
-  
-  return credential;
-}
-```
-
-2. **Optimize Database Queries:**
-```javascript
-// Use indexes for frequently queried fields
-// Add pagination for large result sets
-const credentials = await getCredentials({
-  limit: 50,
-  offset: page * 50,
-  orderBy: 'created_at',
-  order: 'DESC'
+  next();
 });
 ```
 
-3. **Monitor Resource Usage:**
+#### **Token Expiration**
+
+**Problem**: JWT tokens expire during long operations.
+
+```json
+{
+  "error": "Token expired",
+  "code": 401
+}
+```
+
+**Solutions**:
 ```javascript
-// Check memory usage
-const memUsage = process.memoryUsage();
-const memoryInfo = {
-  rss: `${Math.round(memUsage.rss / 1024 / 1024)}MB`,
-  heapUsed: `${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`
-};
-// Memory usage information retrieved
-return memoryInfo;
+// Implement token refresh
+async function refreshToken(oldToken) {
+  try {
+    const response = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${oldToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      const { token } = await response.json();
+      return token;
+    }
+    
+    throw new Error('Token refresh failed');
+  } catch (error) {
+    console.error('Token refresh error:', error.message);
+    throw error;
+  }
+}
+
+// Auto-retry with token refresh
+async function apiCallWithRetry(url, options, maxRetries = 1) {
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      const response = await fetch(url, options);
+      
+      if (response.status === 401 && i < maxRetries) {
+        // Try to refresh token
+        const newToken = await refreshToken(options.headers.Authorization.replace('Bearer ', ''));
+        options.headers.Authorization = `Bearer ${newToken}`;
+        continue;
+      }
+      
+      return response;
+    } catch (error) {
+      if (i === maxRetries) throw error;
+    }
+  }
+}
 ```
 
-## Error Code Reference
+### **Rate Limiting Issues**
 
-### HTTP Status Codes
+#### **Too Many Requests**
 
-| Code | Meaning | Common Causes | Solutions |
-|------|---------|---------------|-----------|
-| 400 | Bad Request | Invalid input data, malformed JSON | Validate request body and parameters |
-| 401 | Unauthorized | Missing or invalid authentication | Check API keys or authentication headers |
-| 403 | Forbidden | Insufficient permissions | Verify account permissions and access rights |
-| 404 | Not Found | Resource doesn't exist | Check resource IDs and endpoints |
-| 409 | Conflict | Resource already exists | Use different identifier or update existing |
-| 429 | Too Many Requests | Rate limit exceeded | Implement backoff strategy |
-| 500 | Internal Server Error | Server-side error | Check logs and server health |
-| 503 | Service Unavailable | Server overloaded or maintenance | Retry later or check service status |
+**Problem**: API returns rate limit errors.
 
-### Stellar-Specific Errors
+```json
+{
+  "error": "Too many requests",
+  "code": 429,
+  "retryAfter": 60
+}
+```
 
-| Error | Description | Solution |
-|-------|-------------|----------|
-| `tx_failed` | Transaction failed | Check transaction parameters and account balance |
-| `tx_bad_seq` | Bad sequence number | Reload account and use current sequence |
-| `tx_insufficient_balance` | Insufficient XLM balance | Fund account with more XLM |
-| `op_no_destination` | Destination account doesn't exist | Create or fund destination account |
-| `op_not_supported` | Operation not supported | Check operation type and parameters |
-
-### Contract-Specific Errors
-
-| Error | Description | Solution |
-|-------|-------------|----------|
-| `ContractNotFound` | Contract doesn't exist | Verify contract ID and deployment |
-| `FunctionNotFound` | Contract function doesn't exist | Check function name and contract spec |
-| `InvalidArgument` | Invalid function argument | Validate argument types and values |
-| `InsufficientFunds` | Not enough funds for operation | Ensure account has sufficient balance |
-
-## Frequently Asked Questions (FAQ)
-
-### General Questions
-
-**Q: What is the ACTA API?**
-A: The ACTA API is a credential management system built on the Stellar blockchain that allows for the creation, verification, and management of digital credentials using smart contracts.
-
-**Q: Which Stellar network should I use?**
-A: Use Testnet for development and testing, and Mainnet for production. Never use Mainnet for testing as it involves real XLM costs.
-
-**Q: How much does it cost to use the API?**
-A: The API itself is free to use, but Stellar network operations require XLM for transaction fees. Typical operations cost 0.00001 XLM (100 stroops) plus additional fees for smart contract operations.
-
-### Technical Questions
-
-**Q: How do I generate a Stellar keypair?**
-A: Use the Stellar SDK:
+**Solutions**:
 ```javascript
-const { Keypair } = require('stellar-sdk');
-const keypair = Keypair.random();
-// Store these keys securely - never share the secret key
-return {
-  publicKey: keypair.publicKey(),
-  secretKey: keypair.secret()
-};
+// Implement exponential backoff
+async function apiCallWithBackoff(url, options, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetch(url, options);
+      
+      if (response.status === 429) {
+        const retryAfter = parseInt(response.headers.get('Retry-After') || '1');
+        const delay = Math.min(retryAfter * 1000, 60000); // Max 1 minute
+        
+        console.warn(`Rate limited, waiting ${delay}ms before retry ${i + 1}`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      return response;
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      
+      const delay = Math.pow(2, i) * 1000; // Exponential backoff
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+}
+
+// Request queuing for high-volume applications
+class RequestQueue {
+  constructor(maxConcurrent = 5, delayBetweenRequests = 100) {
+    this.queue = [];
+    this.running = 0;
+    this.maxConcurrent = maxConcurrent;
+    this.delay = delayBetweenRequests;
+  }
+  
+  async add(requestFn) {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ requestFn, resolve, reject });
+      this.process();
+    });
+  }
+  
+  async process() {
+    if (this.running >= this.maxConcurrent || this.queue.length === 0) {
+      return;
+    }
+    
+    this.running++;
+    const { requestFn, resolve, reject } = this.queue.shift();
+    
+    try {
+      const result = await requestFn();
+      resolve(result);
+    } catch (error) {
+      reject(error);
+    } finally {
+      this.running--;
+      setTimeout(() => this.process(), this.delay);
+    }
+  }
+}
 ```
-
-**Q: Can I use the API without a Stellar account?**
-A: No, you need a funded Stellar account to perform operations. For testnet, you can use Friendbot to fund your account.
-
-**Q: How do I backup my Stellar keys?**
-A: Store your secret key securely offline. Never share it or commit it to version control. Consider using hardware wallets for production keys.
-
-**Q: What happens if I lose my secret key?**
-A: If you lose your secret key, you cannot recover it or access your account. Always keep secure backups of your keys.
-
-**Q: How do I update a credential?**
-A: Use the PATCH endpoint to update credential status:
-```bash
-curl -X PATCH http://localhost:8000/api/credentials/CONTRACT_ID/status \
-  -H "Content-Type: application/json" \
-  -d '{"status": "Revoked"}'
-```
-
-**Q: Can I delete a credential?**
-A: Credentials on the blockchain are immutable, but you can revoke them by updating their status to "Revoked".
-
-**Q: How do I verify a credential?**
-A: Use the verification endpoint with the credential hash:
-```bash
-curl http://localhost:8000/api/credentials/hash/CREDENTIAL_HASH
-```
-
-### Development Questions
-
-**Q: How do I set up a development environment?**
-A: Follow the setup guide in the documentation. Use Docker for the easiest setup:
-```bash
-git clone <repository>
-cd acta-api
-cp .env.example .env
-docker-compose up -d
-```
-
-For detailed instructions, visit our [complete documentation](https://acta.gitbook.io/docs).
-
-**Q: How do I run tests?**
-A: Use npm to run the test suite:
-```bash
-npm test                # Run all tests
-npm run test:unit      # Run unit tests only
-npm run test:integration # Run integration tests only
-```
-
-**Q: How do I enable debug logging?**
-A: Set the LOG_LEVEL environment variable:
-```bash
-LOG_LEVEL=debug npm start
-```
-
-**Q: Can I use the API with other programming languages?**
-A: Yes, the API is language-agnostic. Any language that can make HTTP requests can use the API. We provide examples for JavaScript, Python, and cURL.
-
-### Production Questions
-
-**Q: How do I deploy to production?**
-A: Follow the deployment guide. Key steps include:
-1. Set up production environment variables
-2. Use HTTPS with valid SSL certificates
-3. Configure proper CORS settings
-4. Set up monitoring and logging
-5. Implement backup strategies
-
-**Q: How do I monitor the API in production?**
-A: Use the built-in health check endpoint and implement monitoring:
-```bash
-# Health check
-curl http://your-api.com/health
-
-# Metrics endpoint (if enabled)
-curl http://your-api.com/metrics
-```
-
-**Q: How do I handle high traffic?**
-A: Implement horizontal scaling:
-- Use load balancers
-- Deploy multiple API instances
-- Implement caching
-- Use CDN for static assets
-- Monitor and optimize database queries
-
-**Q: What are the security best practices?**
-A: Follow these security guidelines:
-- Use HTTPS in production
-- Implement rate limiting
-- Validate all inputs
-- Use secure headers
-- Keep dependencies updated
-- Monitor for security vulnerabilities
-- Use environment variables for secrets
-
-### Troubleshooting Workflow
-
-When encountering issues, follow this systematic approach:
-
-1. **Check the Logs:**
-   ```bash
-   # Application logs
-   tail -f logs/combined.log
-   
-   # Error logs
-   tail -f logs/error.log
-   
-   # Docker logs
-   docker logs acta-api
-   ```
-
-2. **Verify Configuration:**
-   ```bash
-   # Check environment variables
-   env | grep STELLAR
-   
-   # Test configuration
-   npm run config:test
-   ```
-
-3. **Test Connectivity:**
-   ```bash
-   # Test Stellar connection
-   curl -I https://horizon.stellar.org
-   
-   # Test API health
-   curl http://localhost:8000/health
-   ```
-
-4. **Check Resources:**
-   ```bash
-   # Memory usage
-   free -h
-   
-   # Disk space
-   df -h
-   
-   # Process status
-   ps aux | grep node
-   ```
-
-5. **Review Recent Changes:**
-   - Check recent deployments
-   - Review configuration changes
-   - Verify dependency updates
-
-If issues persist, contact support with:
-- Error messages and logs
-- Steps to reproduce
-- Environment details
-- API version
 
 ---
 
-*This concludes the ACTA API documentation. For additional support, please refer to the [GitHub repository](https://github.com/your-org/acta-api), visit our [complete documentation](https://acta.gitbook.io/docs), or contact the development team.*
+## **Performance Issues**
+
+### **Slow Response Times**
+
+#### **Database Query Optimization**
+
+**Problem**: API responses are slow due to inefficient queries.
+
+**Diagnosis**:
+```javascript
+// Add query timing
+const startTime = Date.now();
+const result = await database.query(sql, params);
+const duration = Date.now() - startTime;
+
+if (duration > 1000) {
+  console.warn(`Slow query (${duration}ms):`, sql);
+}
+```
+
+**Solutions**:
+```javascript
+// Implement query caching
+const cache = new Map();
+
+async function cachedQuery(sql, params, ttl = 300000) { // 5 minutes
+  const key = `${sql}:${JSON.stringify(params)}`;
+  const cached = cache.get(key);
+  
+  if (cached && Date.now() - cached.timestamp < ttl) {
+    return cached.result;
+  }
+  
+  const result = await database.query(sql, params);
+  cache.set(key, { result, timestamp: Date.now() });
+  
+  return result;
+}
+
+// Add database connection pooling
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000
+});
+```
+
+#### **Memory Leaks**
+
+**Problem**: Application memory usage grows over time.
+
+**Diagnosis**:
+```javascript
+// Monitor memory usage
+setInterval(() => {
+  const usage = process.memoryUsage();
+  console.log('Memory usage:', {
+    rss: `${Math.round(usage.rss / 1024 / 1024)}MB`,
+    heapTotal: `${Math.round(usage.heapTotal / 1024 / 1024)}MB`,
+    heapUsed: `${Math.round(usage.heapUsed / 1024 / 1024)}MB`,
+    external: `${Math.round(usage.external / 1024 / 1024)}MB`
+  });
+}, 30000);
+```
+
+**Solutions**:
+```javascript
+// Proper cleanup of resources
+class ResourceManager {
+  constructor() {
+    this.resources = new Set();
+  }
+  
+  add(resource) {
+    this.resources.add(resource);
+    return resource;
+  }
+  
+  cleanup() {
+    for (const resource of this.resources) {
+      if (resource.close) resource.close();
+      if (resource.destroy) resource.destroy();
+      if (resource.end) resource.end();
+    }
+    this.resources.clear();
+  }
+}
+
+// Use WeakMap for caching to prevent memory leaks
+const cache = new WeakMap();
+
+// Implement proper error handling to prevent resource leaks
+async function safeOperation(operation) {
+  const resources = new ResourceManager();
+  
+  try {
+    return await operation(resources);
+  } finally {
+    resources.cleanup();
+  }
+}
+```
+
+---
+
+## **Production Deployment Issues**
+
+### **Docker Problems**
+
+#### **Container Build Failures**
+
+**Problem**: Docker build fails with various errors.
+
+```bash
+Error: failed to solve: process "/bin/sh -c npm install" did not complete successfully
+```
+
+**Solutions**:
+```dockerfile
+# Use multi-stage build to reduce image size
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+FROM node:18-alpine AS production
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY . .
+
+# Add proper health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node healthcheck.js || exit 1
+```
+
+#### **Container Runtime Issues**
+
+**Problem**: Container starts but application fails.
+
+**Diagnosis**:
+```bash
+# Check container logs
+docker logs container-name
+
+# Inspect container
+docker exec -it container-name sh
+
+# Check environment variables
+docker exec container-name env
+```
+
+**Solutions**:
+```dockerfile
+# Add proper signal handling
+FROM node:18-alpine
+RUN apk add --no-cache dumb-init
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "server.js"]
+
+# Use non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
+USER nodejs
+```
+
+### **Load Balancer Issues**
+
+#### **Health Check Failures**
+
+**Problem**: Load balancer marks instances as unhealthy.
+
+**Solutions**:
+```javascript
+// Comprehensive health check endpoint
+app.get('/health', async (req, res) => {
+  const health = {
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    checks: {}
+  };
+  
+  try {
+    // Check database connection
+    await database.query('SELECT 1');
+    health.checks.database = 'OK';
+    
+    // Check Stellar connection
+    const server = new Server(process.env.STELLAR_HORIZON_URL);
+    await server.ledgers().limit(1).call();
+    health.checks.stellar = 'OK';
+    
+    // Check memory usage
+    const memUsage = process.memoryUsage();
+    health.checks.memory = {
+      status: memUsage.heapUsed < 500 * 1024 * 1024 ? 'OK' : 'WARNING',
+      heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024)
+    };
+    
+    res.json(health);
+  } catch (error) {
+    health.status = 'ERROR';
+    health.error = error.message;
+    res.status(503).json(health);
+  }
+});
+
+// Separate readiness check
+app.get('/ready', (req, res) => {
+  // Check if application is ready to serve requests
+  if (applicationReady) {
+    res.json({ status: 'ready' });
+  } else {
+    res.status(503).json({ status: 'not ready' });
+  }
+});
+```
+
+---
+
+## **Monitoring and Debugging**
+
+### **Logging Best Practices**
+
+```javascript
+// Structured logging with correlation IDs
+const winston = require('winston');
+const { v4: uuidv4 } = require('uuid');
+
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'app.log' })
+  ]
+});
+
+// Add correlation ID middleware
+app.use((req, res, next) => {
+  req.correlationId = uuidv4();
+  res.setHeader('X-Correlation-ID', req.correlationId);
+  
+  logger.info('Request started', {
+    correlationId: req.correlationId,
+    method: req.method,
+    url: req.url,
+    userAgent: req.get('User-Agent')
+  });
+  
+  next();
+});
+```
+
+### **Error Tracking**
+
+```javascript
+// Centralized error handling
+class AppError extends Error {
+  constructor(message, statusCode, code) {
+    super(message);
+    this.statusCode = statusCode;
+    this.code = code;
+    this.isOperational = true;
+    
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+// Global error handler
+app.use((error, req, res, next) => {
+  logger.error('Unhandled error', {
+    correlationId: req.correlationId,
+    error: error.message,
+    stack: error.stack,
+    statusCode: error.statusCode
+  });
+  
+  if (error.isOperational) {
+    res.status(error.statusCode).json({
+      error: error.message,
+      code: error.code,
+      correlationId: req.correlationId
+    });
+  } else {
+    res.status(500).json({
+      error: 'Internal server error',
+      correlationId: req.correlationId
+    });
+  }
+});
+```
+
+---
+
+## **Getting Help**
+
+### **Debug Information Collection**
+
+When reporting issues, please include:
+
+```bash
+# System information
+node --version
+npm --version
+docker --version
+
+# Environment details
+echo $NODE_ENV
+echo $STELLAR_NETWORK
+
+# Application logs
+tail -n 100 app.log
+
+# Network connectivity
+curl -I https://horizon-testnet.stellar.org/
+```
+
+### **Common Debug Commands**
+
+```bash
+# Check API health
+curl -X GET http://localhost:3000/health
+
+# Test specific endpoint
+curl -X POST http://localhost:3000/api/credentials \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key" \
+  -d '{"data": "test"}'
+
+# Monitor real-time logs
+docker logs -f container-name
+
+# Check resource usage
+docker stats container-name
+```
+
+### **Support Channels**
+
+- **GitHub Issues**: Report bugs and feature requests
+- **Documentation**: Check the latest documentation
+- **Community Forum**: Ask questions and share solutions
+- **Discord/Slack**: Real-time community support
+
+---
+
+This troubleshooting guide covers the most common issues you might encounter. If you're still experiencing problems, please provide detailed error messages, logs, and system information when seeking help.
+
+*Previous: [Deployment Guide](./08-deployment.md) | Next: [API Reference](./api-reference.md)*

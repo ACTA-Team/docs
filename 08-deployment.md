@@ -1,107 +1,255 @@
-# Deployment and Production Setup
+# Deployment
+
+<div align="center">
+
+![Deployment](https://img.shields.io/badge/Deployment-Production%20Ready-blue?style=for-the-badge&logo=rocket&logoColor=white)
+
+</div>
 
 ## Overview
 
-This guide covers deploying the ACTA API to production environments, including cloud platforms, containerization, monitoring, and best practices for running a secure and scalable credential management system.
+This guide covers deploying the ACTA API to production environments, including cloud platforms, containerization, monitoring, and best practices for scalable and secure deployments.
 
-## Pre-Deployment Checklist
+---
 
-### Security Requirements
+## **Production Environment Setup**
 
-- [ ] **Environment Variables**: All sensitive data stored in environment variables
-- [ ] **Secret Management**: Production secrets managed through secure services
-- [ ] **HTTPS**: SSL/TLS certificates configured
-- [ ] **CORS**: Proper CORS configuration for production domains
-- [ ] **Rate Limiting**: Production-appropriate rate limits configured
-- [ ] **Input Validation**: All endpoints properly validate input
-- [ ] **Error Handling**: No sensitive information exposed in error messages
+### **Environment Variables**
 
-### Performance Requirements
+Configure these essential environment variables for production:
 
-- [ ] **Database**: Production database configured and optimized
-- [ ] **Caching**: Caching layer implemented where appropriate
-- [ ] **Load Balancing**: Load balancer configured for high availability
-- [ ] **Monitoring**: Application and infrastructure monitoring set up
-- [ ] **Logging**: Centralized logging configured
-- [ ] **Backup**: Automated backup strategy implemented
+```bash
+# Core Configuration
+NODE_ENV=production
+PORT=3000
+API_VERSION=v1
 
-### Stellar Network Requirements
+# Stellar Network Configuration
+STELLAR_NETWORK=mainnet
+STELLAR_HORIZON_URL=https://horizon.stellar.org
+STELLAR_PASSPHRASE="Public Global Stellar Network ; September 2015"
 
-- [ ] **Mainnet Configuration**: Stellar mainnet endpoints configured
-- [ ] **Account Funding**: Production Stellar account funded with sufficient XLM
-- [ ] **Key Security**: Production Stellar keys securely managed
-- [ ] **Contract Deployment**: Smart contracts deployed to mainnet
+# Database Configuration
+DATABASE_URL=postgresql://user:password@host:port/database
+REDIS_URL=redis://user:password@host:port
 
-## Docker Deployment
+# Security
+JWT_SECRET=your-super-secure-jwt-secret-key
+API_KEY_SECRET=your-api-key-encryption-secret
+CORS_ORIGIN=https://yourdomain.com
 
-### Dockerfile
+# Monitoring & Logging
+LOG_LEVEL=info
+SENTRY_DSN=https://your-sentry-dsn
+DATADOG_API_KEY=your-datadog-api-key
 
-The API includes a production-ready Dockerfile:
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# SSL/TLS
+SSL_CERT_PATH=/path/to/ssl/cert.pem
+SSL_KEY_PATH=/path/to/ssl/private.key
+```
+
+### **Production Configuration File**
+
+Create a production configuration file:
+
+```javascript
+// config/production.js
+module.exports = {
+  server: {
+    port: process.env.PORT || 3000,
+    host: '0.0.0.0',
+    ssl: {
+      enabled: true,
+      cert: process.env.SSL_CERT_PATH,
+      key: process.env.SSL_KEY_PATH
+    }
+  },
+  
+  stellar: {
+    network: 'mainnet',
+    horizonUrl: 'https://horizon.stellar.org',
+    passphrase: 'Public Global Stellar Network ; September 2015'
+  },
+  
+  database: {
+    url: process.env.DATABASE_URL,
+    pool: {
+      min: 5,
+      max: 20,
+      idle: 10000,
+      acquire: 30000
+    },
+    logging: false
+  },
+  
+  redis: {
+    url: process.env.REDIS_URL,
+    retryDelayOnFailover: 100,
+    maxRetriesPerRequest: 3
+  },
+  
+  security: {
+    jwtSecret: process.env.JWT_SECRET,
+    apiKeySecret: process.env.API_KEY_SECRET,
+    cors: {
+      origin: process.env.CORS_ORIGIN,
+      credentials: true
+    },
+    helmet: {
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'"],
+          imgSrc: ["'self'", "data:", "https:"]
+        }
+      }
+    }
+  },
+  
+  rateLimit: {
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000,
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+    standardHeaders: true,
+    legacyHeaders: false
+  },
+  
+  logging: {
+    level: process.env.LOG_LEVEL || 'info',
+    format: 'json',
+    transports: ['console', 'file']
+  }
+};
+```
+
+---
+
+## **Docker Deployment**
+
+### **Dockerfile**
+
+Create an optimized production Dockerfile:
 
 ```dockerfile
-FROM node:18-alpine
+# Multi-stage build for production
+FROM node:18-alpine AS builder
 
-# Create app directory
-WORKDIR /usr/src/app
+# Set working directory
+WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm ci --only=production && npm cache clean --force
 
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the application (if you have a build step)
 RUN npm run build
 
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodejs -u 1001
+# Production stage
+FROM node:18-alpine AS production
 
-# Change ownership of the app directory
-RUN chown -R nodejs:nodejs /usr/src/app
-USER nodejs
+# Create app user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S acta -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=builder --chown=acta:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=acta:nodejs /app/dist ./dist
+COPY --from=builder --chown=acta:nodejs /app/package*.json ./
+
+# Install security updates
+RUN apk update && apk upgrade && apk add --no-cache dumb-init
+
+# Switch to non-root user
+USER acta
 
 # Expose port
-EXPOSE 8000
+EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
+  CMD node healthcheck.js
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
 
 # Start the application
-CMD ["npm", "start"]
+CMD ["node", "dist/server.js"]
 ```
 
-### Docker Compose for Production
+### **Docker Compose for Production**
 
 ```yaml
+# docker-compose.prod.yml
 version: '3.8'
 
 services:
   acta-api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
     ports:
-      - "8000:8000"
+      - "3000:3000"
     environment:
       - NODE_ENV=production
-      - PORT=8000
-    env_file:
-      - .env.production
+      - DATABASE_URL=postgresql://acta:${DB_PASSWORD}@postgres:5432/acta_prod
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    networks:
+      - acta-network
+    volumes:
+      - ./logs:/app/logs
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=acta_prod
+      - POSTGRES_USER=acta
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - acta-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - acta-network
 
   nginx:
     image: nginx:alpine
@@ -114,59 +262,108 @@ services:
     depends_on:
       - acta-api
     restart: unless-stopped
-
-  redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
+    networks:
+      - acta-network
 
 volumes:
+  postgres_data:
   redis_data:
+
+networks:
+  acta-network:
+    driver: bridge
 ```
 
-### Building and Running
+### **Nginx Configuration**
 
-```bash
-# Build the Docker image
-docker build -t acta-api:latest .
+```nginx
+# nginx.conf
+events {
+    worker_connections 1024;
+}
 
-# Run with Docker Compose
-docker-compose -f docker-compose.prod.yml up -d
+http {
+    upstream acta_api {
+        server acta-api:3000;
+    }
 
-# Check logs
-docker-compose logs -f acta-api
+    # Rate limiting
+    limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
 
-# Scale the application
-docker-compose up -d --scale acta-api=3
+    # SSL Configuration
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
+
+    server {
+        listen 80;
+        server_name yourdomain.com;
+        return 301 https://$server_name$request_uri;
+    }
+
+    server {
+        listen 443 ssl http2;
+        server_name yourdomain.com;
+
+        ssl_certificate /etc/nginx/ssl/cert.pem;
+        ssl_certificate_key /etc/nginx/ssl/private.key;
+
+        # Security headers
+        add_header X-Frame-Options DENY;
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+        # API routes
+        location /api/ {
+            limit_req zone=api burst=20 nodelay;
+            
+            proxy_pass http://acta_api;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            
+            # Timeouts
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
+        }
+
+        # Health check
+        location /health {
+            proxy_pass http://acta_api/health;
+            access_log off;
+        }
+    }
+}
 ```
 
-## Cloud Platform Deployments
+---
 
-### AWS Deployment
+## **Cloud Platform Deployments**
 
-#### Using AWS ECS (Elastic Container Service)
+### **AWS Deployment**
 
-1. **Create ECS Task Definition**:
+#### **Using AWS ECS with Fargate**
 
-```json
+```yaml
+# aws-ecs-task-definition.json
 {
   "family": "acta-api",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
-  "cpu": "512",
-  "memory": "1024",
-  "executionRoleArn": "arn:aws:iam::ACCOUNT:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::ACCOUNT:role/ecsTaskRole",
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::account:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::account:role/ecsTaskRole",
   "containerDefinitions": [
     {
       "name": "acta-api",
       "image": "your-account.dkr.ecr.region.amazonaws.com/acta-api:latest",
       "portMappings": [
         {
-          "containerPort": 8000,
+          "containerPort": 3000,
           "protocol": "tcp"
         }
       ],
@@ -174,16 +371,16 @@ docker-compose up -d --scale acta-api=3
         {
           "name": "NODE_ENV",
           "value": "production"
-        },
-        {
-          "name": "PORT",
-          "value": "8000"
         }
       ],
       "secrets": [
         {
-          "name": "STELLAR_SECRET_KEY",
-          "valueFrom": "arn:aws:secretsmanager:region:account:secret:stellar-secret-key"
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:secretsmanager:region:account:secret:acta/database-url"
+        },
+        {
+          "name": "JWT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:region:account:secret:acta/jwt-secret"
         }
       ],
       "logConfiguration": {
@@ -195,7 +392,7 @@ docker-compose up -d --scale acta-api=3
         }
       },
       "healthCheck": {
-        "command": ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"],
+        "command": ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"],
         "interval": 30,
         "timeout": 5,
         "retries": 3,
@@ -206,114 +403,288 @@ docker-compose up -d --scale acta-api=3
 }
 ```
 
-2. **Create ECS Service**:
+#### **Terraform Configuration for AWS**
 
-```bash
-aws ecs create-service \
-  --cluster acta-cluster \
-  --service-name acta-api-service \
-  --task-definition acta-api:1 \
-  --desired-count 2 \
-  --launch-type FARGATE \
-  --network-configuration "awsvpcConfiguration={subnets=[subnet-12345,subnet-67890],securityGroups=[sg-abcdef],assignPublicIp=ENABLED}" \
-  --load-balancers targetGroupArn=arn:aws:elasticloadbalancing:region:account:targetgroup/acta-api-tg,containerName=acta-api,containerPort=8000
+```hcl
+# main.tf
+provider "aws" {
+  region = var.aws_region
+}
+
+# VPC and Networking
+resource "aws_vpc" "acta_vpc" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  tags = {
+    Name = "acta-vpc"
+  }
+}
+
+resource "aws_subnet" "acta_private_subnet" {
+  count             = 2
+  vpc_id            = aws_vpc.acta_vpc.id
+  cidr_block        = "10.0.${count.index + 1}.0/24"
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  tags = {
+    Name = "acta-private-subnet-${count.index + 1}"
+  }
+}
+
+resource "aws_subnet" "acta_public_subnet" {
+  count                   = 2
+  vpc_id                  = aws_vpc.acta_vpc.id
+  cidr_block              = "10.0.${count.index + 10}.0/24"
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "acta-public-subnet-${count.index + 1}"
+  }
+}
+
+# RDS Database
+resource "aws_db_instance" "acta_db" {
+  identifier     = "acta-database"
+  engine         = "postgres"
+  engine_version = "15.3"
+  instance_class = "db.t3.micro"
+  
+  allocated_storage     = 20
+  max_allocated_storage = 100
+  storage_type          = "gp2"
+  storage_encrypted     = true
+
+  db_name  = "acta_prod"
+  username = "acta"
+  password = var.db_password
+
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.acta_db_subnet_group.name
+
+  backup_retention_period = 7
+  backup_window          = "03:00-04:00"
+  maintenance_window     = "sun:04:00-sun:05:00"
+
+  skip_final_snapshot = false
+  final_snapshot_identifier = "acta-db-final-snapshot"
+
+  tags = {
+    Name = "acta-database"
+  }
+}
+
+# ECS Cluster
+resource "aws_ecs_cluster" "acta_cluster" {
+  name = "acta-cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+}
+
+# Application Load Balancer
+resource "aws_lb" "acta_alb" {
+  name               = "acta-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb_sg.id]
+  subnets            = aws_subnet.acta_public_subnet[*].id
+
+  enable_deletion_protection = true
+
+  tags = {
+    Name = "acta-alb"
+  }
+}
 ```
 
-#### Using AWS Lambda (Serverless)
+### **Google Cloud Platform (GCP) Deployment**
 
-1. **Install Serverless Framework**:
-
-```bash
-npm install -g serverless
-npm install serverless-http
-```
-
-2. **Create serverless.yml**:
+#### **Using Google Cloud Run**
 
 ```yaml
-service: acta-api
+# cloudbuild.yaml
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/acta-api:$COMMIT_SHA', '.']
+  
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/acta-api:$COMMIT_SHA']
+  
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+    - 'run'
+    - 'deploy'
+    - 'acta-api'
+    - '--image'
+    - 'gcr.io/$PROJECT_ID/acta-api:$COMMIT_SHA'
+    - '--region'
+    - 'us-central1'
+    - '--platform'
+    - 'managed'
+    - '--allow-unauthenticated'
+    - '--set-env-vars'
+    - 'NODE_ENV=production'
+    - '--memory'
+    - '2Gi'
+    - '--cpu'
+    - '2'
+    - '--max-instances'
+    - '10'
+    - '--concurrency'
+    - '80'
 
-provider:
-  name: aws
-  runtime: nodejs18.x
-  region: us-east-1
-  environment:
-    NODE_ENV: production
-    STELLAR_HORIZON_URL: https://horizon.stellar.org
-    STELLAR_SOROBAN_URL: https://soroban.stellar.org
-    STELLAR_NETWORK_PASSPHRASE: Public Global Stellar Network ; September 2015
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - secretsmanager:GetSecretValue
-      Resource: 
-        - arn:aws:secretsmanager:${self:provider.region}:*:secret:stellar-secret-key*
-
-functions:
-  api:
-    handler: lambda.handler
-    events:
-      - http:
-          path: /{proxy+}
-          method: ANY
-          cors: true
-      - http:
-          path: /
-          method: ANY
-          cors: true
-    timeout: 30
-    memorySize: 512
-
-plugins:
-  - serverless-offline
+options:
+  logging: CLOUD_LOGGING_ONLY
 ```
 
-3. **Create Lambda Handler**:
-
-```javascript
-// lambda.js
-const serverless = require('serverless-http');
-const app = require('./src/index');
-
-module.exports.handler = serverless(app);
-```
-
-### Google Cloud Platform (GCP)
-
-#### Using Cloud Run
-
-1. **Create Dockerfile** (same as above)
-
-2. **Deploy to Cloud Run**:
-
-```bash
-# Build and push to Container Registry
-gcloud builds submit --tag gcr.io/PROJECT_ID/acta-api
-
-# Deploy to Cloud Run
-gcloud run deploy acta-api \
-  --image gcr.io/PROJECT_ID/acta-api \
-  --platform managed \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --set-env-vars NODE_ENV=production \
-  --set-secrets STELLAR_SECRET_KEY=stellar-secret-key:latest \
-  --port 8000 \
-  --memory 1Gi \
-  --cpu 1 \
-  --min-instances 1 \
-  --max-instances 10
-```
-
-#### Using Google Kubernetes Engine (GKE)
-
-1. **Create Kubernetes Deployment**:
+#### **Cloud Run Service Configuration**
 
 ```yaml
+# service.yaml
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: acta-api
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/execution-environment: gen2
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "10"
+        autoscaling.knative.dev/minScale: "1"
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+      - image: gcr.io/PROJECT_ID/acta-api:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: database-url
+              key: url
+        resources:
+          limits:
+            cpu: "2"
+            memory: "2Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+```
+
+### **Microsoft Azure Deployment**
+
+#### **Using Azure Container Instances**
+
+```yaml
+# azure-container-group.yaml
+apiVersion: 2019-12-01
+location: eastus
+name: acta-api-group
+properties:
+  containers:
+  - name: acta-api
+    properties:
+      image: youracr.azurecr.io/acta-api:latest
+      resources:
+        requests:
+          cpu: 1.0
+          memoryInGb: 2.0
+      ports:
+      - port: 3000
+        protocol: TCP
+      environmentVariables:
+      - name: NODE_ENV
+        value: production
+      - name: DATABASE_URL
+        secureValue: postgresql://user:pass@host:5432/db
+  osType: Linux
+  restartPolicy: Always
+  ipAddress:
+    type: Public
+    ports:
+    - protocol: TCP
+      port: 3000
+    dnsNameLabel: acta-api
+tags:
+  environment: production
+  project: acta
+```
+
+---
+
+## **Kubernetes Deployment**
+
+### **Kubernetes Manifests**
+
+```yaml
+# namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: acta-production
+
+---
+# configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acta-config
+  namespace: acta-production
+data:
+  NODE_ENV: "production"
+  STELLAR_NETWORK: "mainnet"
+  STELLAR_HORIZON_URL: "https://horizon.stellar.org"
+  LOG_LEVEL: "info"
+
+---
+# secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: acta-secrets
+  namespace: acta-production
+type: Opaque
+data:
+  DATABASE_URL: <base64-encoded-database-url>
+  JWT_SECRET: <base64-encoded-jwt-secret>
+  API_KEY_SECRET: <base64-encoded-api-key-secret>
+
+---
+# deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: acta-api
+  namespace: acta-production
+  labels:
+    app: acta-api
 spec:
   replicas: 3
   selector:
@@ -326,312 +697,201 @@ spec:
     spec:
       containers:
       - name: acta-api
-        image: gcr.io/PROJECT_ID/acta-api:latest
+        image: your-registry/acta-api:latest
         ports:
-        - containerPort: 8000
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: PORT
-          value: "8000"
-        - name: STELLAR_SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              name: stellar-secrets
-              key: secret-key
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: acta-config
+        - secretRef:
+            name: acta-secrets
         resources:
           requests:
             memory: "512Mi"
-            cpu: "250m"
+            cpu: "500m"
           limits:
             memory: "1Gi"
-            cpu: "500m"
+            cpu: "1000m"
         livenessProbe:
           httpGet:
             path: /health
-            port: 8000
+            port: 3000
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /health
-            port: 8000
+            path: /ready
+            port: 3000
           initialDelaySeconds: 5
           periodSeconds: 5
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+
 ---
+# service.yaml
 apiVersion: v1
 kind: Service
 metadata:
   name: acta-api-service
+  namespace: acta-production
 spec:
   selector:
     app: acta-api
   ports:
-  - port: 80
-    targetPort: 8000
-  type: LoadBalancer
+  - protocol: TCP
+    port: 80
+    targetPort: 3000
+  type: ClusterIP
+
+---
+# ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: acta-api-ingress
+  namespace: acta-production
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  tls:
+  - hosts:
+    - api.yourdomain.com
+    secretName: acta-api-tls
+  rules:
+  - host: api.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: acta-api-service
+            port:
+              number: 80
+
+---
+# hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: acta-api-hpa
+  namespace: acta-production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: acta-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
 ```
 
-### Microsoft Azure
+---
 
-#### Using Azure Container Instances
+## **Monitoring and Observability**
 
-```bash
-# Create resource group
-az group create --name acta-api-rg --location eastus
-
-# Create container instance
-az container create \
-  --resource-group acta-api-rg \
-  --name acta-api \
-  --image your-registry/acta-api:latest \
-  --dns-name-label acta-api-unique \
-  --ports 8000 \
-  --environment-variables NODE_ENV=production PORT=8000 \
-  --secure-environment-variables STELLAR_SECRET_KEY=your-secret-key \
-  --cpu 1 \
-  --memory 2
-```
-
-#### Using Azure App Service
-
-```bash
-# Create App Service plan
-az appservice plan create \
-  --name acta-api-plan \
-  --resource-group acta-api-rg \
-  --sku B1 \
-  --is-linux
-
-# Create web app
-az webapp create \
-  --resource-group acta-api-rg \
-  --plan acta-api-plan \
-  --name acta-api-webapp \
-  --deployment-container-image-name your-registry/acta-api:latest
-
-# Configure app settings
-az webapp config appsettings set \
-  --resource-group acta-api-rg \
-  --name acta-api-webapp \
-  --settings NODE_ENV=production PORT=8000 STELLAR_SECRET_KEY=your-secret-key
-```
-
-## Load Balancing and High Availability
-
-### Nginx Configuration
-
-```nginx
-upstream acta_api {
-    least_conn;
-    server acta-api-1:8000 max_fails=3 fail_timeout=30s;
-    server acta-api-2:8000 max_fails=3 fail_timeout=30s;
-    server acta-api-3:8000 max_fails=3 fail_timeout=30s;
-}
-
-server {
-    listen 80;
-    server_name api.yourdomain.com;
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name api.yourdomain.com;
-
-    ssl_certificate /etc/nginx/ssl/cert.pem;
-    ssl_certificate_key /etc/nginx/ssl/key.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
-    ssl_prefer_server_ciphers off;
-
-    # Security headers
-    add_header X-Frame-Options DENY;
-    add_header X-Content-Type-Options nosniff;
-    add_header X-XSS-Protection "1; mode=block";
-    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
-
-    # Rate limiting
-    limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
-    limit_req zone=api burst=20 nodelay;
-
-    location / {
-        proxy_pass http://acta_api;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        
-        # Timeouts
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
-    }
-
-    location /health {
-        proxy_pass http://acta_api;
-        access_log off;
-    }
-}
-```
-
-### HAProxy Configuration
-
-```
-global
-    daemon
-    maxconn 4096
-
-defaults
-    mode http
-    timeout connect 5000ms
-    timeout client 50000ms
-    timeout server 50000ms
-    option httplog
-
-frontend acta_frontend
-    bind *:80
-    bind *:443 ssl crt /etc/ssl/certs/acta-api.pem
-    redirect scheme https if !{ ssl_fc }
-    
-    # Rate limiting
-    stick-table type ip size 100k expire 30s store http_req_rate(10s)
-    http-request track-sc0 src
-    http-request reject if { sc_http_req_rate(0) gt 20 }
-    
-    default_backend acta_backend
-
-backend acta_backend
-    balance roundrobin
-    option httpchk GET /health
-    server api1 acta-api-1:8000 check
-    server api2 acta-api-2:8000 check
-    server api3 acta-api-3:8000 check
-```
-
-## Monitoring and Observability
-
-### Application Monitoring
-
-#### Prometheus Metrics
+### **Health Check Endpoint**
 
 ```javascript
-// src/middleware/metrics.js
+// healthcheck.js
+const http = require('http');
+
+const options = {
+  hostname: 'localhost',
+  port: 3000,
+  path: '/health',
+  method: 'GET',
+  timeout: 3000
+};
+
+const req = http.request(options, (res) => {
+  if (res.statusCode === 200) {
+    process.exit(0);
+  } else {
+    process.exit(1);
+  }
+});
+
+req.on('error', () => {
+  process.exit(1);
+});
+
+req.on('timeout', () => {
+  req.destroy();
+  process.exit(1);
+});
+
+req.end();
+```
+
+### **Prometheus Metrics**
+
+```javascript
+// metrics.js
 const promClient = require('prom-client');
 
-// Create metrics
+// Create a Registry
+const register = new promClient.Registry();
+
+// Add default metrics
+promClient.collectDefaultMetrics({ register });
+
+// Custom metrics
 const httpRequestDuration = new promClient.Histogram({
   name: 'http_request_duration_seconds',
   help: 'Duration of HTTP requests in seconds',
-  labelNames: ['method', 'route', 'status_code']
+  labelNames: ['method', 'route', 'status_code'],
+  buckets: [0.1, 0.5, 1, 2, 5]
 });
 
-const httpRequestTotal = new promClient.Counter({
-  name: 'http_requests_total',
-  help: 'Total number of HTTP requests',
-  labelNames: ['method', 'route', 'status_code']
+const credentialOperations = new promClient.Counter({
+  name: 'credential_operations_total',
+  help: 'Total number of credential operations',
+  labelNames: ['operation', 'status']
 });
 
-const stellarOperations = new promClient.Counter({
-  name: 'stellar_operations_total',
-  help: 'Total number of Stellar operations',
-  labelNames: ['operation_type', 'status']
+const stellarTransactions = new promClient.Counter({
+  name: 'stellar_transactions_total',
+  help: 'Total number of Stellar transactions',
+  labelNames: ['type', 'status']
 });
 
-// Middleware
-const metricsMiddleware = (req, res, next) => {
-  const start = Date.now();
-  
-  res.on('finish', () => {
-    const duration = (Date.now() - start) / 1000;
-    const route = req.route?.path || req.path;
-    
-    httpRequestDuration
-      .labels(req.method, route, res.statusCode)
-      .observe(duration);
-    
-    httpRequestTotal
-      .labels(req.method, route, res.statusCode)
-      .inc();
-  });
-  
-  next();
-};
+register.registerMetric(httpRequestDuration);
+register.registerMetric(credentialOperations);
+register.registerMetric(stellarTransactions);
 
 module.exports = {
-  metricsMiddleware,
-  stellarOperations,
-  register: promClient.register
+  register,
+  httpRequestDuration,
+  credentialOperations,
+  stellarTransactions
 };
 ```
 
-#### Health Check Endpoint
+### **Logging Configuration**
 
 ```javascript
-// Enhanced health check
-app.get('/health', async (req, res) => {
-  const health = {
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    service: 'ACTA API',
-    version: process.env.npm_package_version,
-    checks: {}
-  };
-
-  try {
-    // Check Stellar connection
-    const stellarHealth = await checkStellarConnection();
-    health.checks.stellar = stellarHealth;
-
-    // Check database connection (if applicable)
-    // const dbHealth = await checkDatabaseConnection();
-    // health.checks.database = dbHealth;
-
-    // Check memory usage
-    const memUsage = process.memoryUsage();
-    health.checks.memory = {
-      status: memUsage.heapUsed < 500 * 1024 * 1024 ? 'OK' : 'WARNING',
-      heapUsed: `${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`,
-      heapTotal: `${Math.round(memUsage.heapTotal / 1024 / 1024)}MB`
-    };
-
-    const allHealthy = Object.values(health.checks).every(check => check.status === 'OK');
-    
-    if (!allHealthy) {
-      health.status = 'DEGRADED';
-      return res.status(503).json(health);
-    }
-
-    res.json(health);
-  } catch (error) {
-    health.status = 'ERROR';
-    health.error = error.message;
-    res.status(503).json(health);
-  }
-});
-
-async function checkStellarConnection() {
-  try {
-    const server = new Server(process.env.STELLAR_HORIZON_URL);
-    await server.ledgers().limit(1).call();
-    return { status: 'OK', message: 'Stellar connection healthy' };
-  } catch (error) {
-    return { status: 'ERROR', message: error.message };
-  }
-}
-```
-
-### Logging
-
-#### Structured Logging with Winston
-
-```javascript
-// src/config/logger.js
+// logger.js
 const winston = require('winston');
+const { ElasticsearchTransport } = require('winston-elasticsearch');
 
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
@@ -640,364 +900,263 @@ const logger = winston.createLogger({
     winston.format.errors({ stack: true }),
     winston.format.json()
   ),
-  defaultMeta: { service: 'acta-api' },
+  defaultMeta: { service: 'acta-api', version: process.env.npm_package_version },
   transports: [
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' })
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      )
+    }),
+    new winston.transports.File({
+      filename: 'logs/error.log',
+      level: 'error'
+    }),
+    new winston.transports.File({
+      filename: 'logs/combined.log'
+    })
   ]
 });
 
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
+// Add Elasticsearch transport for production
+if (process.env.NODE_ENV === 'production' && process.env.ELASTICSEARCH_URL) {
+  logger.add(new ElasticsearchTransport({
+    level: 'info',
+    clientOpts: {
+      node: process.env.ELASTICSEARCH_URL,
+      auth: {
+        username: process.env.ELASTICSEARCH_USERNAME,
+        password: process.env.ELASTICSEARCH_PASSWORD
+      }
+    },
+    index: 'acta-api-logs'
   }));
 }
 
 module.exports = logger;
 ```
 
-#### Request Logging Middleware
+---
+
+## **Security Best Practices**
+
+### **Security Checklist**
+
+- **SSL/TLS Configuration**
+  - Use TLS 1.2 or higher
+  - Implement proper certificate management
+  - Enable HSTS headers
+
+- **API Security**
+  - Implement rate limiting
+  - Use API keys for authentication
+  - Validate all input data
+  - Implement CORS properly
+
+- **Infrastructure Security**
+  - Use private subnets for databases
+  - Implement network security groups
+  - Enable encryption at rest and in transit
+  - Regular security updates
+
+- **Secrets Management**
+  - Use dedicated secret management services
+  - Rotate secrets regularly
+  - Never commit secrets to version control
+  - Use environment-specific secrets
+
+### **Security Headers Middleware**
 
 ```javascript
-// src/middleware/logging.js
-const logger = require('../config/logger');
-
-const requestLogger = (req, res, next) => {
-  const start = Date.now();
-  
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    
-    logger.info('HTTP Request', {
-      method: req.method,
-      url: req.url,
-      statusCode: res.statusCode,
-      duration: `${duration}ms`,
-      userAgent: req.get('User-Agent'),
-      ip: req.ip
-    });
-  });
-  
-  next();
-};
-
-module.exports = requestLogger;
-```
-
-### Error Tracking
-
-#### Sentry Integration
-
-```javascript
-// src/config/sentry.js
-const Sentry = require('@sentry/node');
-
-if (process.env.NODE_ENV === 'production') {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV,
-    tracesSampleRate: 0.1
-  });
-}
-
-module.exports = Sentry;
-```
-
-## Security Hardening
-
-### Environment Security
-
-```bash
-# .env.production
-NODE_ENV=production
-PORT=8000
-
-# Stellar Configuration
-STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-STELLAR_HORIZON_URL=https://horizon.stellar.org
-STELLAR_SOROBAN_URL=https://soroban.stellar.org
-STELLAR_NETWORK_PASSPHRASE=Public Global Stellar Network ; September 2015
-
-# Security
-ALLOWED_ORIGINS=https://app.yourdomain.com,https://admin.yourdomain.com
-SESSION_SECRET=your-super-secret-session-key
-JWT_SECRET=your-jwt-secret-key
-
-# Monitoring
-SENTRY_DSN=https://your-sentry-dsn
-LOG_LEVEL=warn
-
-# Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
-```
-
-### Security Middleware
-
-```javascript
-// src/middleware/security.js
+// security.js
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
-// Rate limiting
-const createRateLimit = (windowMs, max, message) => rateLimit({
-  windowMs,
-  max,
-  message: { error: message },
-  standardHeaders: true,
-  legacyHeaders: false
-});
-
-const generalLimiter = createRateLimit(
-  15 * 60 * 1000, // 15 minutes
-  100, // limit each IP to 100 requests per windowMs
-  'Too many requests from this IP'
-);
-
-const credentialLimiter = createRateLimit(
-  60 * 1000, // 1 minute
-  5, // limit each IP to 5 credential creations per minute
-  'Too many credential creation attempts'
-);
-
-// Security headers
-const securityHeaders = helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"]
+const securityMiddleware = (app) => {
+  // Helmet for security headers
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"]
+      }
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true
     }
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  }
-});
+  }));
 
-module.exports = {
-  generalLimiter,
-  credentialLimiter,
-  securityHeaders
+  // Rate limiting
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP',
+    standardHeaders: true,
+    legacyHeaders: false
+  });
+
+  app.use('/api/', limiter);
+
+  // Additional security middleware
+  app.use((req, res, next) => {
+    res.setHeader('X-API-Version', process.env.API_VERSION || 'v1');
+    res.setHeader('X-Powered-By', 'ACTA API');
+    next();
+  });
 };
+
+module.exports = securityMiddleware;
 ```
 
-## Backup and Disaster Recovery
+---
 
-### Database Backup Strategy
+## **Performance Optimization**
+
+### **Caching Strategy**
+
+```javascript
+// cache.js
+const Redis = require('redis');
+const client = Redis.createClient({
+  url: process.env.REDIS_URL
+});
+
+class CacheManager {
+  constructor() {
+    this.defaultTTL = 3600; // 1 hour
+  }
+
+  async get(key) {
+    try {
+      const value = await client.get(key);
+      return value ? JSON.parse(value) : null;
+    } catch (error) {
+      console.error('Cache get error:', error);
+      return null;
+    }
+  }
+
+  async set(key, value, ttl = this.defaultTTL) {
+    try {
+      await client.setEx(key, ttl, JSON.stringify(value));
+    } catch (error) {
+      console.error('Cache set error:', error);
+    }
+  }
+
+  async del(key) {
+    try {
+      await client.del(key);
+    } catch (error) {
+      console.error('Cache delete error:', error);
+    }
+  }
+
+  // Cache middleware for Express
+  middleware(ttl = this.defaultTTL) {
+    return async (req, res, next) => {
+      const key = `cache:${req.method}:${req.originalUrl}`;
+      const cached = await this.get(key);
+
+      if (cached) {
+        return res.json(cached);
+      }
+
+      // Override res.json to cache the response
+      const originalJson = res.json;
+      res.json = function(data) {
+        cache.set(key, data, ttl);
+        return originalJson.call(this, data);
+      };
+
+      next();
+    };
+  }
+}
+
+const cache = new CacheManager();
+module.exports = cache;
+```
+
+### **Database Connection Pooling**
+
+```javascript
+// database.js
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: 20, // maximum number of clients in the pool
+  min: 5,  // minimum number of clients in the pool
+  idleTimeoutMillis: 30000, // close idle clients after 30 seconds
+  connectionTimeoutMillis: 2000, // return an error after 2 seconds if connection could not be established
+  maxUses: 7500, // close (and replace) a connection after it has been used 7500 times
+});
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  pool.end(() => {
+    console.log('Database pool has ended');
+    process.exit(0);
+  });
+});
+
+module.exports = pool;
+```
+
+---
+
+## **Backup and Disaster Recovery**
+
+### **Database Backup Strategy**
 
 ```bash
 #!/bin/bash
 # backup.sh
 
-DATE=$(date +%Y%m%d_%H%M%S)
+# Configuration
+DB_HOST="your-db-host"
+DB_NAME="acta_prod"
+DB_USER="acta"
 BACKUP_DIR="/backups"
-DB_NAME="acta_api"
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_FILE="$BACKUP_DIR/acta_backup_$DATE.sql"
 
-# Create backup directory
+# Create backup directory if it doesn't exist
 mkdir -p $BACKUP_DIR
 
-# Database backup (if using PostgreSQL)
-pg_dump $DB_NAME > $BACKUP_DIR/db_backup_$DATE.sql
+# Create database backup
+pg_dump -h $DB_HOST -U $DB_USER -d $DB_NAME > $BACKUP_FILE
 
 # Compress backup
-gzip $BACKUP_DIR/db_backup_$DATE.sql
+gzip $BACKUP_FILE
 
 # Upload to cloud storage (AWS S3 example)
-aws s3 cp $BACKUP_DIR/db_backup_$DATE.sql.gz s3://acta-backups/database/
+aws s3 cp "$BACKUP_FILE.gz" s3://your-backup-bucket/database/
 
 # Clean up old local backups (keep last 7 days)
-find $BACKUP_DIR -name "db_backup_*.sql.gz" -mtime +7 -delete
+find $BACKUP_DIR -name "acta_backup_*.sql.gz" -mtime +7 -delete
 
-echo "Backup completed: db_backup_$DATE.sql.gz"
+echo "Backup completed: $BACKUP_FILE.gz"
 ```
 
-### Stellar Account Backup
-
-```javascript
-// scripts/backup-stellar-account.js
-const { Keypair, Server } = require('stellar-sdk');
-
-async function backupStellarAccount() {
-  const keypair = Keypair.fromSecret(process.env.STELLAR_SECRET_KEY);
-  const server = new Server(process.env.STELLAR_HORIZON_URL);
-  
-  try {
-    const account = await server.loadAccount(keypair.publicKey());
-    
-    const backup = {
-      publicKey: keypair.publicKey(),
-      accountId: account.accountId(),
-      sequence: account.sequence,
-      balances: account.balances,
-      signers: account.signers,
-      data: account.data_attr,
-      flags: account.flags,
-      thresholds: account.thresholds,
-      backupDate: new Date().toISOString()
-    };
-    
-    // Backup created successfully - save to secure storage
-    // await saveToSecureStorage(backup);
-    return backup;
-    
-  } catch (error) {
-    // Backup failed - handle error appropriately
-    throw new Error(`Backup failed: ${error.message}`);
-  }
-}
-
-if (require.main === module) {
-  backupStellarAccount();
-}
-```
-
-## Performance Optimization
-
-### Caching Strategy
-
-```javascript
-// src/middleware/cache.js
-const redis = require('redis');
-const client = redis.createClient(process.env.REDIS_URL);
-
-const cache = (duration = 300) => {
-  return async (req, res, next) => {
-    const key = `cache:${req.originalUrl}`;
-    
-    try {
-      const cached = await client.get(key);
-      if (cached) {
-        return res.json(JSON.parse(cached));
-      }
-      
-      // Store original json method
-      const originalJson = res.json;
-      
-      // Override json method to cache response
-      res.json = function(data) {
-        client.setex(key, duration, JSON.stringify(data));
-        originalJson.call(this, data);
-      };
-      
-      next();
-    } catch (error) {
-      // Cache error - continue without caching
-      next();
-    }
-  };
-};
-
-module.exports = cache;
-```
-
-### Connection Pooling
-
-```javascript
-// src/config/stellar.js
-const { Server, SorobanRpc } = require('stellar-sdk');
-
-class StellarConnectionPool {
-  constructor() {
-    this.horizonServers = [
-      new Server(process.env.STELLAR_HORIZON_URL),
-      new Server(process.env.STELLAR_HORIZON_URL_BACKUP)
-    ].filter(Boolean);
-    
-    this.sorobanServers = [
-      new SorobanRpc.Server(process.env.STELLAR_SOROBAN_URL),
-      new SorobanRpc.Server(process.env.STELLAR_SOROBAN_URL_BACKUP)
-    ].filter(Boolean);
-    
-    this.currentHorizonIndex = 0;
-    this.currentSorobanIndex = 0;
-  }
-  
-  getHorizonServer() {
-    const server = this.horizonServers[this.currentHorizonIndex];
-    this.currentHorizonIndex = (this.currentHorizonIndex + 1) % this.horizonServers.length;
-    return server;
-  }
-  
-  getSorobanServer() {
-    const server = this.sorobanServers[this.currentSorobanIndex];
-    this.currentSorobanIndex = (this.currentSorobanIndex + 1) % this.sorobanServers.length;
-    return server;
-  }
-}
-
-module.exports = new StellarConnectionPool();
-```
-
-## Maintenance and Updates
-
-### Zero-Downtime Deployment
+### **Automated Backup with Cron**
 
 ```bash
-#!/bin/bash
-# deploy.sh
+# Add to crontab: crontab -e
+# Run backup daily at 2 AM
+0 2 * * * /path/to/backup.sh >> /var/log/acta-backup.log 2>&1
 
-set -e
-
-echo "Starting zero-downtime deployment..."
-
-# Build new image
-docker build -t acta-api:$BUILD_NUMBER .
-
-# Tag as latest
-docker tag acta-api:$BUILD_NUMBER acta-api:latest
-
-# Update service (rolling update)
-docker service update --image acta-api:latest acta-api-service
-
-# Wait for deployment to complete
-echo "Waiting for deployment to complete..."
-sleep 30
-
-# Health check
-if curl -f http://localhost:8000/health; then
-  echo "✅ Deployment successful"
-else
-  echo "❌ Deployment failed, rolling back..."
-  docker service rollback acta-api-service
-  exit 1
-fi
-
-# Clean up old images
-docker image prune -f
-
-echo "Deployment completed successfully"
+# Run backup every 6 hours
+0 */6 * * * /path/to/backup.sh >> /var/log/acta-backup.log 2>&1
 ```
-
-### Database Migrations
-
-```javascript
-// migrations/001_initial_schema.js
-exports.up = function(knex) {
-  return knex.schema.createTable('credentials', function(table) {
-    table.string('contract_id').primary();
-    table.string('hash').notNullable().unique();
-    table.string('status').notNullable().defaultTo('Active');
-    table.json('metadata');
-    table.timestamps(true, true);
-    
-    table.index('hash');
-    table.index('status');
-  });
-};
-
-exports.down = function(knex) {
-  return knex.schema.dropTable('credentials');
-};
-```
-
-This comprehensive deployment guide ensures your ACTA API runs securely and efficiently in production environments with proper monitoring, backup strategies, and maintenance procedures.
 
 ---
 
-*Next: Learn about [Troubleshooting and FAQ](./09-troubleshooting.md) to resolve common issues and questions.*
+This comprehensive deployment guide ensures your ACTA API is production-ready with proper security, monitoring, and scalability considerations.
+
+*Next: Learn about [Troubleshooting](./09-troubleshooting.md) to resolve common deployment and operational issues.*

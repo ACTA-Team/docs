@@ -1,819 +1,641 @@
 # Examples and Use Cases
 
+<div align="center">
+
+![Examples](https://img.shields.io/badge/Examples-Use%20Cases-green?style=for-the-badge&logo=code&logoColor=white)
+
+</div>
+
 ## Overview
 
-This section provides practical examples and real-world use cases for the ACTA API. These examples demonstrate how to integrate the API into various applications and scenarios for managing verifiable credentials on the Stellar blockchain.
+This section provides practical examples and real-world use cases for the ACTA API. Each example includes complete code samples, expected responses, and implementation notes.
 
-## Basic Usage Examples
+---
 
-### 1. Academic Credentials
+## **Basic Credential Operations**
 
-#### Creating a University Degree Credential
+### **Creating a Simple Credential**
+
+Create a basic educational credential:
 
 ```javascript
-const axios = require('axios');
-
-const API_BASE_URL = 'https://acta.up.railway.app/v1';
-
-async function createAcademicCredential() {
-  try {
-    const credentialData = {
-      data: {
-        holder: "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        issuer: "University of Technology",
-        credentialType: "AcademicDegree",
-        subject: "Computer Science Degree",
-        issuanceDate: "2024-06-15",
-        claims: {
-          degree: "Bachelor of Science",
-          major: "Computer Science",
-          gpa: "3.8",
-          graduationYear: "2024",
-          honors: "Magna Cum Laude",
-          studentId: "CS2024001"
-        }
-      },
-      metadata: {
-        issuer: "University of Technology",
-        subject: "John Doe",
-        expirationDate: "2029-06-15T23:59:59Z",
-        category: "education"
-      }
-    };
-
-    const response = await axios.post(`${API_BASE_URL}/v1/credentials`, credentialData);
-    
-    // Academic credential created successfully
-    // Contract ID: ${response.data.data.contractId}
-    // Hash: ${response.data.data.hash}
-    // Transaction Hash: ${response.data.data.transactionHash}
-    
-    return response.data.data;
-  } catch (error) {
-    // Handle error appropriately in your application
-    throw new Error(`Error creating academic credential: ${error.response?.data?.message || error.message}`);
+// POST /api/credentials
+const credentialData = {
+  recipient: "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  issuer: "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  credentialType: "diploma",
+  metadata: {
+    institution: "University of Technology",
+    degree: "Bachelor of Computer Science",
+    graduationDate: "2024-05-15",
+    gpa: "3.8"
   }
-}
+};
 
-// Usage
-createAcademicCredential()
-  .then(credential => {
-    // Credential created successfully
-    return credential;
-  })
-  .catch(error => {
-    // Handle credential creation failure
-    throw error;
-  });
+const response = await fetch('https://acta-api.railway.app/api/credentials', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(credentialData)
+});
+
+const result = await response.json();
+console.log('Credential created:', result);
 ```
 
-### 2. Professional Certifications
+**Expected Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "cred_abc123def456",
+    "transactionHash": "a1b2c3d4e5f6...",
+    "stellarAccount": "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "credentialHash": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+    "timestamp": "2024-01-15T10:30:00Z",
+    "status": "confirmed"
+  }
+}
+```
 
-#### Creating a Professional Certificate
+### **Retrieving a Credential**
+
+Get credential details by ID:
 
 ```javascript
-async function createProfessionalCertification() {
-  const certificationData = {
-    data: {
-      holder: "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      issuer: "Professional Certification Board",
-      credentialType: "ProfessionalCertification",
-      subject: "AWS Solutions Architect",
-      issuanceDate: "2024-03-20",
-      claims: {
-        certificationName: "AWS Certified Solutions Architect - Professional",
-        certificationId: "AWS-SAP-2024-001",
-        level: "Professional",
-        validUntil: "2027-03-20",
-        score: "850/1000",
-        specializations: ["Cloud Architecture", "Security", "Cost Optimization"]
-      }
+// GET /api/credentials/:id
+const credentialId = "cred_abc123def456";
+
+const response = await fetch(`https://acta-api.railway.app/api/credentials/${credentialId}`);
+const credential = await response.json();
+
+console.log('Credential details:', credential);
+```
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "cred_abc123def456",
+    "recipient": "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "issuer": "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "credentialType": "diploma",
+    "metadata": {
+      "institution": "University of Technology",
+      "degree": "Bachelor of Computer Science",
+      "graduationDate": "2024-05-15",
+      "gpa": "3.8"
     },
-    metadata: {
-      issuer: "Amazon Web Services",
-      subject: "Jane Smith",
-      expirationDate: "2027-03-20T23:59:59Z",
-      category: "professional"
-    }
-  };
-
-  try {
-    const response = await axios.post(`${API_BASE_URL}/v1/credentials`, certificationData);
-    return response.data.data;
-  } catch (error) {
-    // Handle error appropriately in your application
-    throw new Error(`Error creating certification: ${error.response?.data?.message || error.message}`);
+    "transactionHash": "a1b2c3d4e5f6...",
+    "stellarAccount": "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "credentialHash": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+    "timestamp": "2024-01-15T10:30:00Z",
+    "status": "confirmed",
+    "isValid": true
   }
 }
 ```
 
-### 3. Identity Verification
+---
 
-#### Creating a Digital Identity Credential
+## **Advanced Use Cases**
 
-```javascript
-async function createIdentityCredential() {
-  const identityData = {
-    data: {
-      holder: "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      issuer: "Government Identity Authority",
-      credentialType: "DigitalIdentity",
-      subject: "Digital Identity Verification",
-      issuanceDate: "2024-01-15",
-      claims: {
-        fullName: "John Doe",
-        dateOfBirth: "1990-05-15",
-        nationality: "US",
-        documentNumber: "ID123456789",
-        verificationLevel: "Level 3",
-        biometricHash: "sha256:abcd1234...",
-        address: {
-          street: "123 Main St",
-          city: "New York",
-          state: "NY",
-          zipCode: "10001",
-          country: "US"
-        }
-      }
-    },
-    metadata: {
-      issuer: "US Government",
-      subject: "John Doe",
-      expirationDate: "2034-01-15T23:59:59Z",
-      category: "identity"
-    }
-  };
+### **Professional Certification System**
 
-  try {
-    const response = await axios.post(`${API_BASE_URL}/v1/credentials`, identityData);
-    return response.data.data;
-  } catch (error) {
-    console.error('Error creating identity credential:', error.response?.data || error.message);
-    throw error;
-  }
-}
-```
-
-## Advanced Use Cases
-
-### 1. Credential Verification System
-
-#### Complete Verification Workflow
+Complete workflow for managing professional certifications:
 
 ```javascript
-class CredentialVerifier {
+class CertificationManager {
   constructor(apiBaseUrl) {
     this.apiBaseUrl = apiBaseUrl;
   }
 
-  async verifyCredential(contractId) {
-    try {
-      // Step 1: Retrieve credential
-      const response = await axios.get(`${this.apiBaseUrl}/v1/credentials/${contractId}`);
-      const credential = response.data.data;
-
-      // Step 2: Check status
-      if (credential.status !== 'Active') {
-        return {
-          valid: false,
-          reason: `Credential status is ${credential.status}`,
-          credential
-        };
+  // Issue a professional certification
+  async issueCertification(certificationData) {
+    const credential = {
+      recipient: certificationData.professionalId,
+      issuer: certificationData.organizationId,
+      credentialType: "certification",
+      metadata: {
+        certificationName: certificationData.name,
+        certifyingOrganization: certificationData.organization,
+        issueDate: new Date().toISOString(),
+        expiryDate: certificationData.expiryDate,
+        certificationLevel: certificationData.level,
+        skills: certificationData.skills,
+        verificationCode: this.generateVerificationCode()
       }
+    };
 
-      // Step 3: Verify on blockchain (additional verification)
-      const blockchainVerification = await this.verifyOnBlockchain(contractId);
-      
+    const response = await fetch(`${this.apiBaseUrl}/api/credentials`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credential)
+    });
+
+    return await response.json();
+  }
+
+  // Verify certification validity
+  async verifyCertification(credentialId) {
+    const response = await fetch(`${this.apiBaseUrl}/api/credentials/${credentialId}/verify`);
+    const verification = await response.json();
+
+    if (verification.success && verification.data.isValid) {
       return {
-        valid: blockchainVerification.valid,
-        reason: blockchainVerification.reason,
-        credential,
+        valid: true,
+        certification: verification.data,
         verifiedAt: new Date().toISOString()
       };
-
-    } catch (error) {
-      if (error.response?.status === 404) {
-        return {
-          valid: false,
-          reason: 'Credential not found',
-          error: error.response.data
-        };
-      }
-      throw error;
     }
+
+    return { valid: false, reason: verification.error || 'Invalid certification' };
   }
 
-  async verifyOnBlockchain(contractId) {
-    // This would implement additional blockchain verification
-    // For now, we'll simulate the verification
-    return {
-      valid: true,
-      reason: 'Credential verified on Stellar blockchain'
-    };
+  // List all certifications for a professional
+  async getProfessionalCertifications(professionalId) {
+    const response = await fetch(
+      `${this.apiBaseUrl}/api/credentials?recipient=${professionalId}&type=certification`
+    );
+    return await response.json();
   }
 
-  async verifyByHash(hash) {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/v1/credentials/hash/${hash}`);
-      return await this.verifyCredential(response.data.data.contractId);
-    } catch (error) {
-      if (error.response?.status === 404) {
-        return {
-          valid: false,
-          reason: 'Credential not found by hash'
-        };
-      }
-      throw error;
-    }
+  generateVerificationCode() {
+    return Math.random().toString(36).substring(2, 15) + 
+           Math.random().toString(36).substring(2, 15);
   }
 }
 
-// Usage
-const verifier = new CredentialVerifier('https://acta.up.railway.app/v1');
+// Usage example
+const certManager = new CertificationManager('https://acta-api.railway.app');
 
-async function verifyExample() {
-  const contractId = 'CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ';
-  
-  const result = await verifier.verifyCredential(contractId);
-  
-  if (result.valid) {
-    console.log('✅ Credential is valid');
-    console.log('Verified at:', result.verifiedAt);
-  } else {
-    console.log('❌ Credential is invalid');
-    console.log('Reason:', result.reason);
-  }
-}
-```
-
-### 2. Batch Credential Management
-
-#### Creating Multiple Credentials
-
-```javascript
-class BatchCredentialManager {
-  constructor(apiBaseUrl) {
-    this.apiBaseUrl = apiBaseUrl;
-  }
-
-  async createBatchCredentials(credentialsData) {
-    const results = [];
-    const errors = [];
-
-    for (let i = 0; i < credentialsData.length; i++) {
-      try {
-        console.log(`Creating credential ${i + 1}/${credentialsData.length}...`);
-        
-        const response = await axios.post(`${this.apiBaseUrl}/v1/credentials`, credentialsData[i]);
-        results.push({
-          index: i,
-          success: true,
-          data: response.data.data
-        });
-
-        // Add delay to avoid rate limiting
-        await this.delay(1000);
-
-      } catch (error) {
-        errors.push({
-          index: i,
-          success: false,
-          error: error.response?.data || error.message,
-          data: credentialsData[i]
-        });
-      }
-    }
-
-    return {
-      successful: results,
-      failed: errors,
-      summary: {
-        total: credentialsData.length,
-        successful: results.length,
-        failed: errors.length
-      }
-    };
-  }
-
-  delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-}
-
-// Example: Creating multiple student credentials
-async function createStudentBatch() {
-  const students = [
-    {
-      name: "Alice Johnson",
-      studentId: "STU001",
-      degree: "Computer Science",
-      gpa: "3.9"
-    },
-    {
-      name: "Bob Smith",
-      studentId: "STU002", 
-      degree: "Mathematics",
-      gpa: "3.7"
-    },
-    {
-      name: "Carol Davis",
-      studentId: "STU003",
-      degree: "Physics",
-      gpa: "3.8"
-    }
-  ];
-
-  const credentialsData = students.map(student => ({
-    data: {
-      holder: "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", // Would be unique per student
-      issuer: "University of Technology",
-      credentialType: "AcademicDegree",
-      subject: `${student.degree} Degree`,
-      issuanceDate: "2024-06-15",
-      claims: {
-        degree: "Bachelor of Science",
-        major: student.degree,
-        gpa: student.gpa,
-        graduationYear: "2024",
-        studentId: student.studentId
-      }
-    },
-    metadata: {
-      issuer: "University of Technology",
-      subject: student.name,
-      expirationDate: "2029-06-15T23:59:59Z",
-      category: "education"
-    }
-  }));
-
-  const manager = new BatchCredentialManager('https://acta.up.railway.app/v1');
-  const results = await manager.createBatchCredentials(credentialsData);
-
-  console.log('Batch creation results:');
-  console.log(`✅ Successful: ${results.summary.successful}`);
-  console.log(`❌ Failed: ${results.summary.failed}`);
-  
-  if (results.failed.length > 0) {
-    console.log('Failed credentials:');
-    results.failed.forEach(failure => {
-      console.log(`- Index ${failure.index}: ${failure.error}`);
-    });
-  }
-
-  return results;
-}
-```
-
-### 3. Credential Status Management
-
-#### Automated Status Updates
-
-```javascript
-class CredentialStatusManager {
-  constructor(apiBaseUrl) {
-    this.apiBaseUrl = apiBaseUrl;
-  }
-
-  async updateStatus(contractId, newStatus, reason = '') {
-    try {
-      const response = await axios.patch(
-        `${this.apiBaseUrl}/v1/credentials/${contractId}/status`,
-        { status: newStatus }
-      );
-
-      console.log(`✅ Credential ${contractId} status updated to ${newStatus}`);
-      
-      // Log the status change
-      await this.logStatusChange(contractId, newStatus, reason);
-      
-      return response.data;
-    } catch (error) {
-      console.error(`❌ Failed to update credential ${contractId}:`, error.response?.data || error.message);
-      throw error;
-    }
-  }
-
-  async revokeCredential(contractId, reason) {
-    return await this.updateStatus(contractId, 'Revoked', reason);
-  }
-
-  async suspendCredential(contractId, reason) {
-    return await this.updateStatus(contractId, 'Suspended', reason);
-  }
-
-  async reactivateCredential(contractId, reason) {
-    return await this.updateStatus(contractId, 'Active', reason);
-  }
-
-  async logStatusChange(contractId, status, reason) {
-    const logEntry = {
-      contractId,
-      status,
-      reason,
-      timestamp: new Date().toISOString(),
-      action: 'status_change'
-    };
-
-    // In a real application, this would write to a database or logging service
-    console.log('Status change logged:', logEntry);
-  }
-
-  async bulkStatusUpdate(updates) {
-    const results = [];
-    
-    for (const update of updates) {
-      try {
-        await this.updateStatus(update.contractId, update.status, update.reason);
-        results.push({
-          contractId: update.contractId,
-          success: true,
-          status: update.status
-        });
-      } catch (error) {
-        results.push({
-          contractId: update.contractId,
-          success: false,
-          error: error.message
-        });
-      }
-    }
-
-    return results;
-  }
-}
-
-// Example usage
-async function manageCredentialStatuses() {
-  const manager = new CredentialStatusManager('https://acta.up.railway.app/v1');
-
-  // Revoke a credential
-  await manager.revokeCredential(
-    'CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ',
-    'Student expelled for academic misconduct'
-  );
-
-  // Suspend multiple credentials
-  const suspensions = [
-    {
-      contractId: 'CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ',
-      status: 'Suspended',
-      reason: 'Under investigation'
-    },
-    {
-      contractId: 'CB3J7CBYOH8FIT5EG4KGYPRL4MTO7KVMOWK4HNIXURBYJY6XXQ3WBFVJR',
-      status: 'Suspended', 
-      reason: 'Pending verification'
-    }
-  ];
-
-  const results = await manager.bulkStatusUpdate(suspensions);
-  console.log('Bulk update results:', results);
-}
-```
-
-## Integration Examples
-
-### 1. Express.js Middleware
-
-#### Credential Verification Middleware
-
-```javascript
-const axios = require('axios');
-
-function createCredentialVerificationMiddleware(apiBaseUrl) {
-  return async (req, res, next) => {
-    try {
-      const contractId = req.headers['x-credential-id'];
-      
-      if (!contractId) {
-        return res.status(401).json({
-          error: 'Missing credential ID in headers'
-        });
-      }
-
-      // Verify the credential
-      const response = await axios.get(`${apiBaseUrl}/v1/credentials/${contractId}`);
-      const credential = response.data.data;
-
-      if (credential.status !== 'Active') {
-        return res.status(403).json({
-          error: 'Credential is not active',
-          status: credential.status
-        });
-      }
-
-      // Add credential info to request
-      req.credential = credential;
-      next();
-
-    } catch (error) {
-      if (error.response?.status === 404) {
-        return res.status(404).json({
-          error: 'Credential not found'
-        });
-      }
-
-      console.error('Credential verification error:', error);
-      return res.status(500).json({
-        error: 'Failed to verify credential'
-      });
-    }
-  };
-}
-
-// Usage in Express app
-const express = require('express');
-const app = express();
-
-const verifyCredential = createCredentialVerificationMiddleware('https://acta.up.railway.app/v1');
-
-app.get('/protected-resource', verifyCredential, (req, res) => {
-  res.json({
-    message: 'Access granted',
-    credential: req.credential
-  });
+// Issue AWS Solutions Architect certification
+const awsCertification = await certManager.issueCertification({
+  professionalId: "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  organizationId: "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  name: "AWS Certified Solutions Architect",
+  organization: "Amazon Web Services",
+  level: "Associate",
+  expiryDate: "2027-01-15T00:00:00Z",
+  skills: ["Cloud Architecture", "AWS Services", "Security", "Scalability"]
 });
+
+console.log('Certification issued:', awsCertification);
 ```
 
-### 2. React Frontend Integration
+### **Academic Transcript System**
 
-#### Credential Display Component
+Manage complete academic transcripts:
+
+```javascript
+class TranscriptManager {
+  constructor(apiBaseUrl) {
+    this.apiBaseUrl = apiBaseUrl;
+  }
+
+  // Create a complete academic transcript
+  async createTranscript(studentData, courses) {
+    const transcriptCredential = {
+      recipient: studentData.stellarId,
+      issuer: studentData.institutionId,
+      credentialType: "transcript",
+      metadata: {
+        studentInfo: {
+          name: studentData.name,
+          studentId: studentData.id,
+          program: studentData.program,
+          admissionDate: studentData.admissionDate,
+          graduationDate: studentData.graduationDate
+        },
+        institution: {
+          name: studentData.institutionName,
+          address: studentData.institutionAddress,
+          accreditation: studentData.accreditation
+        },
+        academicRecord: {
+          courses: courses,
+          totalCredits: courses.reduce((sum, course) => sum + course.credits, 0),
+          gpa: this.calculateGPA(courses),
+          honors: studentData.honors || []
+        },
+        issueDate: new Date().toISOString(),
+        transcriptId: this.generateTranscriptId()
+      }
+    };
+
+    const response = await fetch(`${this.apiBaseUrl}/api/credentials`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(transcriptCredential)
+    });
+
+    return await response.json();
+  }
+
+  // Add a single course to existing transcript
+  async addCourseToTranscript(transcriptId, courseData) {
+    // First, get the existing transcript
+    const existingResponse = await fetch(`${this.apiBaseUrl}/api/credentials/${transcriptId}`);
+    const existing = await existingResponse.json();
+
+    if (!existing.success) {
+      throw new Error('Transcript not found');
+    }
+
+    // Update the transcript with new course
+    const updatedCourses = [...existing.data.metadata.academicRecord.courses, courseData];
+    const updatedMetadata = {
+      ...existing.data.metadata,
+      academicRecord: {
+        ...existing.data.metadata.academicRecord,
+        courses: updatedCourses,
+        totalCredits: updatedCourses.reduce((sum, course) => sum + course.credits, 0),
+        gpa: this.calculateGPA(updatedCourses)
+      }
+    };
+
+    // Create new credential with updated data
+    const updatedCredential = {
+      recipient: existing.data.recipient,
+      issuer: existing.data.issuer,
+      credentialType: "transcript",
+      metadata: updatedMetadata
+    };
+
+    const response = await fetch(`${this.apiBaseUrl}/api/credentials`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedCredential)
+    });
+
+    return await response.json();
+  }
+
+  calculateGPA(courses) {
+    const gradePoints = {
+      'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+      'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+      'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+      'D+': 1.3, 'D': 1.0, 'F': 0.0
+    };
+
+    let totalPoints = 0;
+    let totalCredits = 0;
+
+    courses.forEach(course => {
+      const points = gradePoints[course.grade] || 0;
+      totalPoints += points * course.credits;
+      totalCredits += course.credits;
+    });
+
+    return totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00';
+  }
+
+  generateTranscriptId() {
+    return 'TRANS-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
+}
+
+// Usage example
+const transcriptManager = new TranscriptManager('https://acta-api.railway.app');
+
+const studentData = {
+  stellarId: "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  institutionId: "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  name: "Jane Smith",
+  id: "STU2024001",
+  program: "Bachelor of Science in Computer Science",
+  admissionDate: "2020-09-01",
+  graduationDate: "2024-05-15",
+  institutionName: "Tech University",
+  institutionAddress: "123 University Ave, Tech City, TC 12345",
+  accreditation: "ABET Accredited",
+  honors: ["Magna Cum Laude", "Dean's List"]
+};
+
+const courses = [
+  {
+    courseCode: "CS101",
+    courseName: "Introduction to Programming",
+    credits: 3,
+    grade: "A",
+    semester: "Fall 2020"
+  },
+  {
+    courseCode: "CS201",
+    courseName: "Data Structures",
+    credits: 4,
+    grade: "A-",
+    semester: "Spring 2021"
+  },
+  {
+    courseCode: "CS301",
+    courseName: "Algorithms",
+    credits: 4,
+    grade: "B+",
+    semester: "Fall 2021"
+  }
+];
+
+const transcript = await transcriptManager.createTranscript(studentData, courses);
+console.log('Transcript created:', transcript);
+```
+
+---
+
+## **Integration Examples**
+
+### **React Frontend Integration**
+
+Complete React component for credential management:
 
 ```jsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 
-const CredentialViewer = ({ contractId }) => {
-  const [credential, setCredential] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const CredentialManager = () => {
+  const [credentials, setCredentials] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [newCredential, setNewCredential] = useState({
+    recipient: '',
+    credentialType: 'certificate',
+    metadata: {}
+  });
 
-  useEffect(() => {
-    const fetchCredential = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(`/api/v1/credentials/${contractId}`);
-        setCredential(response.data.data);
-      } catch (err) {
-        setError(err.response?.data?.error || 'Failed to fetch credential');
-      } finally {
-        setLoading(false);
+  const API_BASE_URL = 'https://acta-api.railway.app/api';
+
+  // Fetch all credentials
+  const fetchCredentials = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/credentials`);
+      const data = await response.json();
+      if (data.success) {
+        setCredentials(data.data);
       }
-    };
-
-    if (contractId) {
-      fetchCredential();
-    }
-  }, [contractId]);
-
-  if (loading) return <div className="loading">Loading credential...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
-  if (!credential) return <div>No credential found</div>;
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Active': return 'green';
-      case 'Revoked': return 'red';
-      case 'Suspended': return 'orange';
-      default: return 'gray';
+    } catch (error) {
+      console.error('Error fetching credentials:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <div className="credential-card">
-      <div className="credential-header">
-        <h3>Verifiable Credential</h3>
-        <span 
-          className="status-badge" 
-          style={{ backgroundColor: getStatusColor(credential.status) }}
-        >
-          {credential.status}
-        </span>
-      </div>
+  // Create new credential
+  const createCredential = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/credentials`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newCredential),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setCredentials([...credentials, data.data]);
+        setNewCredential({
+          recipient: '',
+          credentialType: 'certificate',
+          metadata: {}
+        });
+        alert('Credential created successfully!');
+      } else {
+        alert('Error creating credential: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error creating credential:', error);
+      alert('Error creating credential');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Verify credential
+  const verifyCredential = async (credentialId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/credentials/${credentialId}/verify`);
+      const data = await response.json();
       
-      <div className="credential-details">
-        <div className="detail-row">
-          <strong>Contract ID:</strong>
-          <code>{credential.contractId}</code>
-        </div>
-        <div className="detail-row">
-          <strong>Hash:</strong>
-          <code>{credential.hash}</code>
-        </div>
-        <div className="detail-row">
-          <strong>Created:</strong>
-          {new Date(credential.createdAt).toLocaleDateString()}
-        </div>
+      if (data.success && data.data.isValid) {
+        alert('Credential is valid!');
+      } else {
+        alert('Credential is invalid or expired');
+      }
+    } catch (error) {
+      console.error('Error verifying credential:', error);
+      alert('Error verifying credential');
+    }
+  };
+
+  useEffect(() => {
+    fetchCredentials();
+  }, []);
+
+  return (
+    <div className="credential-manager">
+      <h2>ACTA Credential Manager</h2>
+      
+      {/* Create Credential Form */}
+      <div className="create-credential">
+        <h3>Create New Credential</h3>
+        <form onSubmit={createCredential}>
+          <div>
+            <label>Recipient Stellar ID:</label>
+            <input
+              type="text"
+              value={newCredential.recipient}
+              onChange={(e) => setNewCredential({
+                ...newCredential,
+                recipient: e.target.value
+              })}
+              placeholder="GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+              required
+            />
+          </div>
+          
+          <div>
+            <label>Credential Type:</label>
+            <select
+              value={newCredential.credentialType}
+              onChange={(e) => setNewCredential({
+                ...newCredential,
+                credentialType: e.target.value
+              })}
+            >
+              <option value="certificate">Certificate</option>
+              <option value="diploma">Diploma</option>
+              <option value="license">License</option>
+              <option value="badge">Badge</option>
+            </select>
+          </div>
+          
+          <button type="submit" disabled={loading}>
+            {loading ? 'Creating...' : 'Create Credential'}
+          </button>
+        </form>
       </div>
 
-      <div className="credential-actions">
-        <button onClick={() => window.open(`https://stellar.expert/explorer/testnet/contract/${credential.contractId}`)}>
-          View on Stellar
-        </button>
+      {/* Credentials List */}
+      <div className="credentials-list">
+        <h3>Existing Credentials</h3>
+        {loading ? (
+          <p>Loading credentials...</p>
+        ) : (
+          <div className="credentials-grid">
+            {credentials.map((credential) => (
+              <div key={credential.id} className="credential-card">
+                <h4>{credential.credentialType}</h4>
+                <p><strong>ID:</strong> {credential.id}</p>
+                <p><strong>Recipient:</strong> {credential.recipient.substring(0, 10)}...</p>
+                <p><strong>Status:</strong> {credential.status}</p>
+                <p><strong>Created:</strong> {new Date(credential.timestamp).toLocaleDateString()}</p>
+                
+                <div className="credential-actions">
+                  <button onClick={() => verifyCredential(credential.id)}>
+                    Verify
+                  </button>
+                  <button onClick={() => window.open(`https://stellar.expert/explorer/testnet/tx/${credential.transactionHash}`, '_blank')}>
+                    View on Stellar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-// Credential Creation Form
-const CredentialForm = ({ onCredentialCreated }) => {
-  const [formData, setFormData] = useState({
-    holder: '',
-    credentialType: '',
-    subject: '',
-    claims: {}
-  });
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-
-    try {
-      const response = await axios.post('/api/v1/credentials', {
-        data: formData
-      });
-
-      onCredentialCreated(response.data.data);
-      setFormData({ holder: '', credentialType: '', subject: '', claims: {} });
-    } catch (error) {
-      alert('Failed to create credential: ' + (error.response?.data?.error || error.message));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="credential-form">
-      <div className="form-group">
-        <label>Holder Address:</label>
-        <input
-          type="text"
-          value={formData.holder}
-          onChange={(e) => setFormData({...formData, holder: e.target.value})}
-          placeholder="GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          required
-        />
-      </div>
-
-      <div className="form-group">
-        <label>Credential Type:</label>
-        <select
-          value={formData.credentialType}
-          onChange={(e) => setFormData({...formData, credentialType: e.target.value})}
-          required
-        >
-          <option value="">Select type...</option>
-          <option value="AcademicDegree">Academic Degree</option>
-          <option value="ProfessionalCertification">Professional Certification</option>
-          <option value="DigitalIdentity">Digital Identity</option>
-        </select>
-      </div>
-
-      <div className="form-group">
-        <label>Subject:</label>
-        <input
-          type="text"
-          value={formData.subject}
-          onChange={(e) => setFormData({...formData, subject: e.target.value})}
-          placeholder="e.g., Computer Science Degree"
-          required
-        />
-      </div>
-
-      <button type="submit" disabled={submitting}>
-        {submitting ? 'Creating...' : 'Create Credential'}
-      </button>
-    </form>
-  );
-};
-
-export { CredentialViewer, CredentialForm };
+export default CredentialManager;
 ```
 
-### 3. Python Integration
+### **Node.js Backend Integration**
 
-#### Python SDK Example
+Express.js middleware for credential verification:
 
-```python
-import requests
-import json
-import hashlib
-from datetime import datetime, timezone
-from typing import Dict, Any, Optional
+```javascript
+const express = require('express');
+const axios = require('axios');
 
-class ACTAClient:
-    def __init__(self, base_url: str = "https://acta.up.railway.app/v1"):
-        self.base_url = base_url.rstrip('/')
-        self.session = requests.Session()
-        self.session.headers.update({
-            'Content-Type': 'application/json'
-        })
+class ACTAIntegration {
+  constructor(apiBaseUrl) {
+    this.apiBaseUrl = apiBaseUrl;
+  }
 
-    def create_credential(self, data: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Create a new verifiable credential."""
-        payload = {"data": data}
-        if metadata:
-            payload["metadata"] = metadata
-
-        response = self.session.post(f"{self.base_url}/v1/credentials", json=payload)
-        response.raise_for_status()
-        return response.json()
-
-    def get_credential(self, contract_id: str) -> Dict[str, Any]:
-        """Get credential by contract ID."""
-        response = self.session.get(f"{self.base_url}/v1/credentials/{contract_id}")
-        response.raise_for_status()
-        return response.json()
-
-    def get_credential_by_hash(self, hash_value: str) -> Dict[str, Any]:
-        """Get credential by hash."""
-        response = self.session.get(f"{self.base_url}/v1/credentials/hash/{hash_value}")
-        response.raise_for_status()
-        return response.json()
-
-    def update_credential_status(self, contract_id: str, status: str) -> Dict[str, Any]:
-        """Update credential status."""
-        payload = {"status": status}
-        response = self.session.patch(f"{self.base_url}/v1/credentials/{contract_id}/status", json=payload)
-        response.raise_for_status()
-        return response.json()
-
-    def verify_credential(self, contract_id: str) -> Dict[str, Any]:
-        """Verify a credential's validity."""
-        try:
-            credential = self.get_credential(contract_id)
-            
-            return {
-                "valid": credential["data"]["status"] == "Active",
-                "status": credential["data"]["status"],
-                "contract_id": contract_id,
-                "verified_at": datetime.now(timezone.utc).isoformat()
-            }
-        except requests.exceptions.HTTPError as e:
-            if e.response.status_code == 404:
-                return {
-                    "valid": False,
-                    "error": "Credential not found",
-                    "contract_id": contract_id
-                }
-            raise
-
-# Example usage
-def main():
-    client = ACTAClient()
-
-    # Create an academic credential
-    academic_data = {
-        "holder": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "issuer": "Python University",
-        "credentialType": "AcademicDegree",
-        "subject": "Data Science Degree",
-        "issuanceDate": "2024-01-15",
-        "claims": {
-            "degree": "Master of Science",
-            "major": "Data Science",
-            "gpa": "3.9",
-            "graduationYear": "2024"
+  // Middleware to verify credentials
+  verifyCredentialMiddleware() {
+    return async (req, res, next) => {
+      try {
+        const credentialId = req.headers['x-credential-id'];
+        
+        if (!credentialId) {
+          return res.status(401).json({
+            error: 'Credential ID required in X-Credential-ID header'
+          });
         }
+
+        const verification = await this.verifyCredential(credentialId);
+        
+        if (verification.isValid) {
+          req.credential = verification;
+          next();
+        } else {
+          res.status(403).json({
+            error: 'Invalid or expired credential'
+          });
+        }
+      } catch (error) {
+        res.status(500).json({
+          error: 'Credential verification failed'
+        });
+      }
+    };
+  }
+
+  // Verify a credential
+  async verifyCredential(credentialId) {
+    try {
+      const response = await axios.get(`${this.apiBaseUrl}/credentials/${credentialId}/verify`);
+      return response.data.data;
+    } catch (error) {
+      throw new Error('Verification request failed');
     }
+  }
 
-    metadata = {
-        "issuer": "Python University",
-        "subject": "Alice Python",
-        "expirationDate": "2029-01-15T23:59:59Z",
-        "category": "education"
+  // Create a credential
+  async createCredential(credentialData) {
+    try {
+      const response = await axios.post(`${this.apiBaseUrl}/credentials`, credentialData);
+      return response.data.data;
+    } catch (error) {
+      throw new Error('Credential creation failed');
     }
+  }
 
-    try:
-        # Create credential
-        result = client.create_credential(academic_data, metadata)
-        print(f"✅ Credential created: {result['data']['contractId']}")
+  // Get credentials for a recipient
+  async getCredentialsForRecipient(recipientId) {
+    try {
+      const response = await axios.get(`${this.apiBaseUrl}/credentials?recipient=${recipientId}`);
+      return response.data.data;
+    } catch (error) {
+      throw new Error('Failed to fetch credentials');
+    }
+  }
+}
 
-        # Verify credential
-        verification = client.verify_credential(result['data']['contractId'])
-        print(f"✅ Credential valid: {verification['valid']}")
+// Usage in Express app
+const app = express();
+const acta = new ACTAIntegration('https://acta-api.railway.app/api');
 
-        # Update status
-        client.update_credential_status(result['data']['contractId'], "Suspended")
-        print("✅ Credential suspended")
+app.use(express.json());
 
-        # Verify again
-        verification = client.verify_credential(result['data']['contractId'])
-        print(f"✅ Credential valid after suspension: {verification['valid']}")
+// Protected route that requires valid credential
+app.get('/protected-resource', acta.verifyCredentialMiddleware(), (req, res) => {
+  res.json({
+    message: 'Access granted!',
+    credential: req.credential,
+    data: 'This is protected data'
+  });
+});
 
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Error: {e}")
+// Issue a new credential
+app.post('/issue-credential', async (req, res) => {
+  try {
+    const credential = await acta.createCredential(req.body);
+    res.json({ success: true, credential });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-if __name__ == "__main__":
-    main()
+// Get user's credentials
+app.get('/my-credentials/:stellarId', async (req, res) => {
+  try {
+    const credentials = await acta.getCredentialsForRecipient(req.params.stellarId);
+    res.json({ success: true, credentials });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
+});
 ```
 
-## Real-World Scenarios
+---
 
-### 1. University Degree Verification System
+## **Real-World Scenarios**
 
-A complete system for managing and verifying university degrees:
+### **University Degree Verification System**
+
+Complete system for universities to issue and verify degrees:
 
 ```javascript
 class UniversityCredentialSystem {
@@ -822,126 +644,423 @@ class UniversityCredentialSystem {
     this.universityId = universityId;
   }
 
-  async issueDegreeCertificate(studentData) {
-    const credentialData = {
-      data: {
-        holder: studentData.stellarAddress,
-        issuer: this.universityId,
-        credentialType: "AcademicDegree",
-        subject: `${studentData.degree} in ${studentData.major}`,
-        issuanceDate: new Date().toISOString().split('T')[0],
-        claims: {
-          degree: studentData.degree,
-          major: studentData.major,
-          gpa: studentData.gpa,
-          graduationYear: studentData.graduationYear,
-          studentId: studentData.studentId,
-          honors: studentData.honors,
-          thesis: studentData.thesis
-        }
-      },
+  // Issue a degree
+  async issueDegree(graduateData) {
+    const degreeCredential = {
+      recipient: graduateData.stellarId,
+      issuer: this.universityId,
+      credentialType: "degree",
       metadata: {
-        issuer: "University of Technology",
-        subject: studentData.fullName,
-        expirationDate: null, // Degrees don't expire
-        category: "education"
+        degree: {
+          title: graduateData.degreeTitle,
+          level: graduateData.level, // "Bachelor", "Master", "Doctorate"
+          field: graduateData.field,
+          specialization: graduateData.specialization
+        },
+        student: {
+          name: graduateData.name,
+          studentId: graduateData.studentId,
+          admissionDate: graduateData.admissionDate,
+          graduationDate: graduateData.graduationDate
+        },
+        university: {
+          name: "Tech University",
+          address: "123 University Ave, Tech City",
+          accreditation: "Regional Accreditation Board",
+          registrarSignature: await this.generateRegistrarSignature(graduateData)
+        },
+        academic: {
+          gpa: graduateData.gpa,
+          honors: graduateData.honors,
+          thesis: graduateData.thesis
+        }
       }
     };
 
-    const response = await axios.post(`${this.apiBaseUrl}/v1/credentials`, credentialData);
-    
-    // Store in university database
-    await this.storeInUniversityDatabase(studentData.studentId, response.data.data);
-    
-    return response.data.data;
+    const response = await fetch(`${this.apiBaseUrl}/credentials`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(degreeCredential)
+    });
+
+    return await response.json();
   }
 
-  async verifyDegreeForEmployer(contractId, employerRequest) {
-    try {
-      const credential = await axios.get(`${this.apiBaseUrl}/v1/credentials/${contractId}`);
+  // Verify degree for employers
+  async verifyDegreeForEmployer(credentialId, employerInfo) {
+    const verification = await fetch(`${this.apiBaseUrl}/credentials/${credentialId}/verify`);
+    const result = await verification.json();
+
+    if (result.success && result.data.isValid) {
+      // Log verification request for audit
+      await this.logVerificationRequest(credentialId, employerInfo);
       
       return {
-        verified: credential.data.data.status === 'Active',
-        degree: credential.data.data.claims?.degree,
-        major: credential.data.data.claims?.major,
-        graduationYear: credential.data.data.claims?.graduationYear,
-        gpa: employerRequest.includeGPA ? credential.data.data.claims?.gpa : null,
+        verified: true,
+        degree: result.data.metadata.degree,
+        graduate: result.data.metadata.student,
+        university: result.data.metadata.university,
         verificationDate: new Date().toISOString()
       };
-    } catch (error) {
-      return {
-        verified: false,
-        error: 'Credential not found or invalid'
-      };
     }
+
+    return { verified: false };
   }
 
-  async storeInUniversityDatabase(studentId, credentialData) {
-    // Implementation would store in university's database
-    console.log(`Stored credential for student ${studentId}:`, credentialData.contractId);
+  async generateRegistrarSignature(graduateData) {
+    // In a real implementation, this would be a cryptographic signature
+    return `REG-${Date.now()}-${graduateData.studentId}`;
+  }
+
+  async logVerificationRequest(credentialId, employerInfo) {
+    // Log verification for audit trail
+    console.log(`Degree verification requested for ${credentialId} by ${employerInfo.company}`);
   }
 }
+
+// Usage
+const university = new UniversityCredentialSystem(
+  'https://acta-api.railway.app/api',
+  'GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+);
+
+// Issue a Master's degree
+const mastersDegree = await university.issueDegree({
+  stellarId: "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  name: "John Doe",
+  studentId: "MS2024001",
+  degreeTitle: "Master of Science in Computer Science",
+  level: "Master",
+  field: "Computer Science",
+  specialization: "Artificial Intelligence",
+  admissionDate: "2022-09-01",
+  graduationDate: "2024-05-15",
+  gpa: "3.9",
+  honors: ["Summa Cum Laude"],
+  thesis: "Machine Learning Applications in Healthcare"
+});
+
+console.log('Degree issued:', mastersDegree);
 ```
 
-### 2. Professional Certification Tracking
+### **Professional License Management**
+
+System for managing professional licenses with expiration:
 
 ```javascript
-class CertificationTracker {
-  constructor(apiBaseUrl) {
+class ProfessionalLicenseManager {
+  constructor(apiBaseUrl, licensingBodyId) {
     this.apiBaseUrl = apiBaseUrl;
+    this.licensingBodyId = licensingBodyId;
   }
 
-  async trackCertificationExpiry() {
-    // This would typically query a database of issued certifications
-    const certifications = await this.getCertificationsNearExpiry();
-    
-    for (const cert of certifications) {
-      if (this.isExpired(cert.expirationDate)) {
-        await this.expireCertification(cert.contractId);
-      } else if (this.isNearExpiry(cert.expirationDate)) {
-        await this.notifyRenewal(cert);
+  // Issue a professional license
+  async issueLicense(licenseData) {
+    const licenseCredential = {
+      recipient: licenseData.professionalId,
+      issuer: this.licensingBodyId,
+      credentialType: "license",
+      metadata: {
+        license: {
+          type: licenseData.licenseType,
+          number: licenseData.licenseNumber,
+          issueDate: new Date().toISOString(),
+          expiryDate: licenseData.expiryDate,
+          status: "active"
+        },
+        professional: {
+          name: licenseData.name,
+          professionalId: licenseData.professionalId,
+          specializations: licenseData.specializations
+        },
+        licensingBody: {
+          name: licenseData.licensingBodyName,
+          jurisdiction: licenseData.jurisdiction,
+          contactInfo: licenseData.contactInfo
+        },
+        requirements: {
+          education: licenseData.educationRequirements,
+          experience: licenseData.experienceRequirements,
+          examinations: licenseData.examinations
+        }
       }
-    }
-  }
+    };
 
-  async expireCertification(contractId) {
-    await axios.patch(`${this.apiBaseUrl}/v1/credentials/${contractId}/status`, {
-      status: 'Revoked'
+    const response = await fetch(`${this.apiBaseUrl}/credentials`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(licenseCredential)
     });
-    console.log(`Certification ${contractId} expired and revoked`);
+
+    return await response.json();
   }
 
-  isExpired(expirationDate) {
-    return new Date(expirationDate) < new Date();
+  // Check license status and expiry
+  async checkLicenseStatus(credentialId) {
+    const response = await fetch(`${this.apiBaseUrl}/credentials/${credentialId}`);
+    const credential = await response.json();
+
+    if (!credential.success) {
+      return { valid: false, reason: 'License not found' };
+    }
+
+    const expiryDate = new Date(credential.data.metadata.license.expiryDate);
+    const now = new Date();
+
+    if (expiryDate < now) {
+      return {
+        valid: false,
+        reason: 'License expired',
+        expiredOn: expiryDate.toISOString()
+      };
+    }
+
+    const daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+
+    return {
+      valid: true,
+      license: credential.data.metadata.license,
+      professional: credential.data.metadata.professional,
+      daysUntilExpiry,
+      renewalRequired: daysUntilExpiry <= 30
+    };
   }
 
-  isNearExpiry(expirationDate, daysThreshold = 30) {
-    const expiry = new Date(expirationDate);
-    const threshold = new Date();
-    threshold.setDate(threshold.getDate() + daysThreshold);
-    return expiry <= threshold;
-  }
+  // Renew a license
+  async renewLicense(originalCredentialId, renewalData) {
+    // Get original license
+    const originalResponse = await fetch(`${this.apiBaseUrl}/credentials/${originalCredentialId}`);
+    const original = await originalResponse.json();
 
-  async getCertificationsNearExpiry() {
-    // Mock data - in real implementation, this would query a database
-    return [
-      {
-        contractId: 'CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ',
-        expirationDate: '2024-02-15T23:59:59Z',
-        holderEmail: 'john@example.com'
+    if (!original.success) {
+      throw new Error('Original license not found');
+    }
+
+    // Create renewed license
+    const renewedLicense = {
+      ...original.data,
+      metadata: {
+        ...original.data.metadata,
+        license: {
+          ...original.data.metadata.license,
+          issueDate: new Date().toISOString(),
+          expiryDate: renewalData.newExpiryDate,
+          renewalHistory: [
+            ...(original.data.metadata.license.renewalHistory || []),
+            {
+              previousExpiry: original.data.metadata.license.expiryDate,
+              renewedOn: new Date().toISOString(),
+              renewalFee: renewalData.fee
+            }
+          ]
+        }
       }
-    ];
-  }
+    };
 
-  async notifyRenewal(certification) {
-    console.log(`Sending renewal notification for ${certification.contractId}`);
-    // Implementation would send email/notification
+    delete renewedLicense.id;
+    delete renewedLicense.transactionHash;
+    delete renewedLicense.timestamp;
+
+    const response = await fetch(`${this.apiBaseUrl}/credentials`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(renewedLicense)
+    });
+
+    return await response.json();
   }
 }
-```
 
-These examples demonstrate the versatility and power of the ACTA API for managing verifiable credentials across various industries and use cases. The API's blockchain-based approach ensures security, immutability, and global verifiability of credentials.
+// Usage
+const licenseManager = new ProfessionalLicenseManager(
+  'https://acta-api.railway.app/api',
+  'GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+);
+
+// Issue a medical license
+const medicalLicense = await licenseManager.issueLicense({
+  professionalId: "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  name: "Dr. Sarah Johnson",
+  licenseType: "Medical Practice License",
+  licenseNumber: "MD-2024-001234",
+  expiryDate: "2026-12-31T23:59:59Z",
+  specializations: ["Internal Medicine", "Cardiology"],
+  licensingBodyName: "State Medical Board",
+  jurisdiction: "California, USA",
+  contactInfo: "contact@medicalboard.ca.gov",
+  educationRequirements: ["MD from accredited institution"],
+  experienceRequirements: ["3 years residency"],
+  examinations: ["USMLE Step 1", "USMLE Step 2", "USMLE Step 3"]
+});
+
+console.log('Medical license issued:', medicalLicense);
+
+// Check license status
+const licenseStatus = await licenseManager.checkLicenseStatus(medicalLicense.data.id);
+console.log('License status:', licenseStatus);
+```
 
 ---
 
-*Next: Learn about [Deployment and Production Setup](./08-deployment.md) to deploy your API to production environments.*
+## **Error Handling Examples**
+
+### **Comprehensive Error Handling**
+
+```javascript
+class ACTAErrorHandler {
+  static async handleAPICall(apiCall) {
+    try {
+      const response = await apiCall();
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ACTAError(errorData.error, response.status, errorData);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      if (error instanceof ACTAError) {
+        throw error;
+      }
+      
+      // Network or other errors
+      throw new ACTAError('Network error or service unavailable', 500, { originalError: error.message });
+    }
+  }
+
+  static handleError(error) {
+    console.error('ACTA API Error:', error);
+    
+    switch (error.status) {
+      case 400:
+        return 'Invalid request data. Please check your input.';
+      case 401:
+        return 'Authentication required. Please provide valid credentials.';
+      case 403:
+        return 'Access denied. You do not have permission for this operation.';
+      case 404:
+        return 'Credential not found.';
+      case 429:
+        return 'Too many requests. Please try again later.';
+      case 500:
+        return 'Server error. Please try again later.';
+      default:
+        return 'An unexpected error occurred.';
+    }
+  }
+}
+
+class ACTAError extends Error {
+  constructor(message, status, data) {
+    super(message);
+    this.name = 'ACTAError';
+    this.status = status;
+    this.data = data;
+  }
+}
+
+// Usage with error handling
+async function createCredentialWithErrorHandling(credentialData) {
+  try {
+    const result = await ACTAErrorHandler.handleAPICall(async () => {
+      return fetch('https://acta-api.railway.app/api/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentialData)
+      });
+    });
+    
+    console.log('Credential created successfully:', result);
+    return result;
+  } catch (error) {
+    const userMessage = ACTAErrorHandler.handleError(error);
+    console.error('User-friendly error:', userMessage);
+    throw new Error(userMessage);
+  }
+}
+```
+
+---
+
+## **Performance Optimization**
+
+### **Batch Operations**
+
+```javascript
+class BatchCredentialManager {
+  constructor(apiBaseUrl, batchSize = 10) {
+    this.apiBaseUrl = apiBaseUrl;
+    this.batchSize = batchSize;
+  }
+
+  // Create multiple credentials in batches
+  async createCredentialsBatch(credentialsData) {
+    const results = [];
+    const errors = [];
+
+    for (let i = 0; i < credentialsData.length; i += this.batchSize) {
+      const batch = credentialsData.slice(i, i + this.batchSize);
+      
+      const batchPromises = batch.map(async (credentialData, index) => {
+        try {
+          const response = await fetch(`${this.apiBaseUrl}/credentials`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(credentialData)
+          });
+          
+          const result = await response.json();
+          return { index: i + index, success: true, data: result };
+        } catch (error) {
+          return { index: i + index, success: false, error: error.message };
+        }
+      });
+
+      const batchResults = await Promise.allSettled(batchPromises);
+      
+      batchResults.forEach(result => {
+        if (result.status === 'fulfilled') {
+          if (result.value.success) {
+            results.push(result.value);
+          } else {
+            errors.push(result.value);
+          }
+        } else {
+          errors.push({ error: result.reason.message });
+        }
+      });
+
+      // Add delay between batches to avoid rate limiting
+      if (i + this.batchSize < credentialsData.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
+    return { results, errors, total: credentialsData.length };
+  }
+}
+
+// Usage
+const batchManager = new BatchCredentialManager('https://acta-api.railway.app/api');
+
+const credentialsToCreate = [
+  {
+    recipient: "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    credentialType: "certificate",
+    metadata: { course: "JavaScript Fundamentals" }
+  },
+  {
+    recipient: "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    credentialType: "certificate",
+    metadata: { course: "React Development" }
+  }
+  // ... more credentials
+];
+
+const batchResult = await batchManager.createCredentialsBatch(credentialsToCreate);
+console.log(`Created ${batchResult.results.length} credentials, ${batchResult.errors.length} errors`);
+```
+
+---
+
+*Next: Learn about [Deployment](./08-deployment.md) to deploy your ACTA API integration.*

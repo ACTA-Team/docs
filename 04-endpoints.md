@@ -1,332 +1,245 @@
-# 🌐 API Endpoints
+# API Endpoints
 
 <div align="center">
 
-![API Endpoints](https://img.shields.io/badge/API-Endpoints-4CAF50?style=for-the-badge&logo=api&logoColor=white)
-![REST](https://img.shields.io/badge/REST-API-FF6B6B?style=for-the-badge&logo=rest&logoColor=white)
+![API Endpoints](https://img.shields.io/badge/API-Endpoints-blue?style=for-the-badge&logo=api&logoColor=white)
 
 </div>
 
-## 📋 Overview
+## Overview
 
-The ACTA API provides a comprehensive set of RESTful endpoints for managing verifiable credentials on the Stellar blockchain. All endpoints return JSON responses and follow standard HTTP status codes.
+This section provides comprehensive documentation for all available API endpoints in the ACTA API. Each endpoint includes detailed information about request/response formats, parameters, and example usage.
 
-<div align="center">
-
-### 🌍 **Base URLs**
+### **Base URLs**
 
 | Environment | URL | Status |
 |-------------|-----|--------|
-| 🔧 **Development** | `http://localhost:8000` | ✅ Active |
-| 🚀 **Production** | `https://acta.up.railway.app` | ✅ Active |
-
-</div>
+| **Development** | `http://localhost:8000` | Active |
+| **Production** | `https://acta.up.railway.app` | Active |
 
 ---
 
-## 📊 Response Format
+## Response Format
 
-All API responses follow a consistent format for better predictability and error handling:
+All API responses follow a consistent JSON structure for both success and error cases.
 
-### ✅ **Success Response**
+### **Success Response**
+
 ```json
 {
   "success": true,
   "data": {
     // Response data here
-  }
+  },
+  "message": "Operation completed successfully"
 }
 ```
 
-### ❌ **Error Response**
+### **Error Response**
+
 ```json
 {
-  "error": "Human-readable error message",
-  "details": "Additional technical details (development only)"
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message"
+  }
 }
 ```
 
 ---
 
-## 🏠 **Root Endpoints**
+## **Root Endpoints**
 
-### 🏡 `GET /`
+### `GET /`
 
-Returns basic API information and available endpoints.
+Returns basic API information and welcome message.
 
-<div align="center">
+**Endpoint:** `GET /`
 
-**📍 Endpoint:** `GET /`
+**Description:** Root endpoint that provides API information and status.
 
-</div>
+**Request:**
 
-**📤 Request:**
-```http
-GET /
+```bash
+curl -X GET https://acta.up.railway.app/
 ```
 
-**📥 Response:**
+**Response:**
+
 ```json
 {
-  "message": "ACTA API - Stellar Credential Management",
-  "version": "1.0.0",
-  "endpoints": {
-    "health": "/health",
-    "credentials": "/credentials"
+  "success": true,
+  "data": {
+    "message": "Welcome to ACTA API",
+    "version": "1.0.0",
+    "description": "Autonomous Credential Trust Architecture API"
   }
 }
 ```
 
-**📊 Status Codes:**
-- `200 OK`: ✅ Success
+**Status Codes:**
+- `200 OK`: Success
 
 ---
 
-### 🏓 `GET /ping`
+### `GET /ping`
 
 Simple connectivity test endpoint.
 
-<div align="center">
+**Endpoint:** `GET /ping`
 
-**📍 Endpoint:** `GET /ping`
+**Description:** Health check endpoint for testing API connectivity.
 
-</div>
+**Request:**
 
-**📤 Request:**
-```http
-GET /ping
+```bash
+curl -X GET https://acta.up.railway.app/ping
 ```
 
-**📥 Response:**
+**Response:**
+
 ```json
 {
-  "message": "pong",
-  "timestamp": "2025-01-15T10:30:00.000Z",
-  "port": 8000
-}
-```
-
-**📊 Status Codes:**
-- `200 OK`: ✅ Connection successful
-
----
-
-### 🩺 `GET /health`
-
-Comprehensive health check endpoint for monitoring and load balancers.
-
-<div align="center">
-
-**📍 Endpoint:** `GET /health`
-
-</div>
-
-**📤 Request:**
-```http
-GET /health
-```
-
-**📥 Response:**
-```json
-{
-  "status": "OK",
-  "timestamp": "2025-01-15T10:30:00.000Z",
-  "service": "Stellar Credential API",
-  "port": 8000,
-  "env": {
-    "NODE_ENV": "production",
-    "STELLAR_NETWORK": "testnet"
+  "success": true,
+  "data": {
+    "message": "pong"
   }
 }
 ```
 
-**📊 Status Codes:**
-- `200 OK`: ✅ Service is healthy
-- `503 Service Unavailable`: ❌ Service is unhealthy
+**Status Codes:**
+- `200 OK`: Connection successful
 
 ---
 
-## 🔐 **Credentials Endpoints**
+### `GET /health`
 
-All credential endpoints are prefixed with `/credentials` and handle verifiable credential operations on the Stellar blockchain.
+Comprehensive health check including Stellar network connectivity.
 
-### 📝 `POST /credentials`
+**Endpoint:** `GET /health`
+
+**Description:** Detailed health check that verifies API and Stellar network status.
+
+**Request:**
+
+```bash
+curl -X GET https://acta.up.railway.app/health
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "status": "healthy",
+    "timestamp": "2024-01-15T10:30:00.000Z",
+    "stellar": {
+      "network": "testnet",
+      "connected": true
+    }
+  }
+}
+```
+
+**Status Codes:**
+- `200 OK`: Service is healthy
+- `503 Service Unavailable`: Service is unhealthy
+
+---
+
+## **Credentials Endpoints**
+
+All credential-related operations for creating, retrieving, and managing verifiable credentials.
+
+### `POST /credentials`
 
 Creates a new verifiable credential on the Stellar blockchain.
 
-<div align="center">
+**Endpoint:** `POST /credentials`
 
-**📍 Endpoint:** `POST /credentials`
+**Description:** Creates a new credential by storing its hash on the Stellar blockchain using Soroban smart contracts.
 
-</div>
+**Request:**
 
-**📤 Request:**
-```http
-POST /credentials
-Content-Type: application/json
-
-{
-  "data": {
-    "holder": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "issuer": "University of Technology",
-    "credentialType": "AcademicDegree",
-    "subject": "Computer Science Degree",
-    "issuanceDate": "2024-06-15",
-    "claims": {
-      "degree": "Bachelor of Science",
-      "major": "Computer Science",
-      "gpa": "3.8",
-      "graduationYear": "2024"
+```bash
+curl -X POST https://acta.up.railway.app/credentials \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": {
+      "type": "UniversityDegree",
+      "credentialSubject": {
+        "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
+        "degree": {
+          "type": "BachelorDegree",
+          "name": "Bachelor of Science and Arts"
+        }
+      },
+      "issuer": "did:example:76e12ec712ebc6f1c221ebfeb1f",
+      "issuanceDate": "2024-01-15T10:00:00Z"
+    },
+    "metadata": {
+      "issuer": "University of Example",
+      "subject": "John Doe",
+      "expirationDate": "2029-01-15T10:00:00Z"
     }
+  }'
+```
+
+**Request Body Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `data` | Object | Yes | The credential data to be stored on blockchain |
+| `metadata` | Object | No | Additional metadata about the credential |
+| `metadata.issuer` | String | No | The issuer of the credential |
+| `metadata.subject` | String | No | The subject of the credential |
+| `metadata.expirationDate` | String | No | ISO 8601 expiration date |
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "hash": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+    "transactionId": "1234567890abcdef1234567890abcdef12345678"
   },
-  "metadata": {
-    "issuer": "University of Technology",
-    "subject": "John Doe",
-    "expirationDate": "2029-06-15T23:59:59Z",
-    "category": "education"
-  }
+  "message": "Credential created successfully"
 }
 ```
 
-**📋 Request Body Parameters:**
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `data` | Object | ✅ Yes | The credential data to be stored on blockchain |
-| `metadata` | Object | ❌ No | Additional metadata about the credential |
-| `metadata.issuer` | String | ❌ No | The issuer of the credential |
-| `metadata.subject` | String | ❌ No | The subject of the credential |
-| `metadata.expirationDate` | String | ❌ No | ISO 8601 expiration date |
-
-**📥 Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "hash": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
-    "transactionHash": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-    "ledgerSequence": 12345678,
-    "createdAt": "2025-01-15T10:30:00.000Z"
-  }
-}
-```
-
-**📊 Status Codes:**
-- `201 Created`: ✅ Credential created successfully
-- `400 Bad Request`: ❌ Missing required field: data
-- `500 Internal Server Error`: ❌ Failed to create credential
+**Status Codes:**
+- `201 Created`: Credential created successfully
+- `400 Bad Request`: Missing required field: data
+- `500 Internal Server Error`: Failed to create credential
 
 ---
 
-### 🔍 `GET /credentials/:contractId`
+### `GET /credentials/:contractId`
 
-Retrieves credential information by contract ID.
+Retrieves a credential by its Stellar contract ID.
 
-<div align="center">
+**Endpoint:** `GET /credentials/:contractId`
 
-**📍 Endpoint:** `GET /credentials/:contractId`
+**Description:** Fetches credential data from the Stellar blockchain using the contract ID.
 
-</div>
+**Request:**
 
-**📤 Request:**
-```http
-GET /credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```bash
+curl -X GET https://acta.up.railway.app/credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
-**📋 Path Parameters:**
+**Path Parameters:**
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `contractId` | String | ✅ Yes | The Stellar contract ID of the credential |
+| `contractId` | String | Yes | The Stellar contract ID of the credential |
 
-**📥 Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "hash": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
-    "status": "Active"
-  }
-}
-```
+**Response:**
 
-**📊 Status Codes:**
-- `200 OK`: ✅ Credential found
-- `400 Bad Request`: ❌ Contract ID is required
-- `500 Internal Server Error`: ❌ Failed to get credential
-
----
-
-### 🔄 `PATCH /credentials/:contractId/status`
-
-Updates the status of an existing credential.
-
-<div align="center">
-
-**📍 Endpoint:** `PATCH /credentials/:contractId/status`
-
-</div>
-
-**📤 Request:**
-```http
-PATCH /credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/status
-Content-Type: application/json
-
-{
-  "status": "Revoked"
-}
-```
-
-**📋 Parameters:**
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `contractId` | String | ✅ Yes | The Stellar contract ID (path parameter) |
-| `status` | String | ✅ Yes | New status: "Active", "Revoked", or "Suspended" |
-
-**📥 Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "status": "Revoked",
-    "updatedAt": "2025-01-15T10:30:00.000Z"
-  }
-}
-```
-
-**📊 Status Codes:**
-- `200 OK`: ✅ Status updated successfully
-- `400 Bad Request`: ❌ Invalid status or missing contract ID
-- `500 Internal Server Error`: ❌ Failed to update status
-
----
-
-### 🔎 `GET /credentials/hash/:hash`
-
-Retrieves credential information by data hash.
-
-<div align="center">
-
-**📍 Endpoint:** `GET /credentials/hash/:hash`
-
-</div>
-
-**📤 Request:**
-```http
-GET /credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
-```
-
-**📋 Path Parameters:**
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `hash` | String | ✅ Yes | 64-character hexadecimal hash of credential data |
-
-**📥 Response:**
 ```json
 {
   "success": true,
@@ -334,22 +247,120 @@ GET /credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef
     "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "hash": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
     "status": "Active",
-    "data": {
-      // Original credential data
-    },
-    "metadata": {
-      // Original metadata
-    },
-    "createdAt": "2025-01-15T10:30:00.000Z"
+    "createdAt": "2024-01-15T10:00:00Z"
   }
 }
 ```
 
-**📊 Status Codes:**
-- `200 OK`: ✅ Credential found
-- `400 Bad Request`: ❌ Invalid hash format
-- `404 Not Found`: ❌ Credential not found
-- `500 Internal Server Error`: ❌ Failed to get credential
+**Status Codes:**
+- `200 OK`: Credential found
+- `400 Bad Request`: Contract ID is required
+- `500 Internal Server Error`: Failed to get credential
+
+---
+
+### `PATCH /credentials/:contractId/status`
+
+Updates the status of an existing credential.
+
+**Endpoint:** `PATCH /credentials/:contractId/status`
+
+**Description:** Updates the status of a credential (Active, Revoked, or Suspended) on the blockchain.
+
+**Request:**
+
+```bash
+curl -X PATCH https://acta.up.railway.app/credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/status \
+  -H "Content-Type: application/json" \
+  -d '{"status": "Revoked"}'
+```
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `contractId` | String | Yes | The Stellar contract ID (path parameter) |
+| `status` | String | Yes | New status: "Active", "Revoked", or "Suspended" |
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "status": "Revoked",
+    "updatedAt": "2024-01-15T11:00:00Z"
+  },
+  "message": "Credential status updated successfully"
+}
+```
+
+**Status Codes:**
+- `200 OK`: Status updated successfully
+- `400 Bad Request`: Invalid status or missing contract ID
+- `500 Internal Server Error`: Failed to update status
+
+---
+
+### `GET /credentials/hash/:hash`
+
+Retrieves a credential by its data hash.
+
+**Endpoint:** `GET /credentials/hash/:hash`
+
+**Description:** Fetches credential information using the SHA-256 hash of the credential data.
+
+**Request:**
+
+```bash
+curl -X GET https://acta.up.railway.app/credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `hash` | String | Yes | 64-character hexadecimal hash of credential data |
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "hash": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+    "status": "Active",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "verification": {
+      "valid": true,
+      "verified": true,
+      "message": "Credential is valid and verified on blockchain"
+    }
+  }
+}
+```
+
+**Status Codes:**
+- `200 OK`: Credential found
+- `400 Bad Request`: Invalid hash format
+- `404 Not Found`: Credential not found
+- `500 Internal Server Error`: Failed to get credential
+
+**Request:**
+```http
+GET /credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `hash` | String | Yes | SHA-256 hash of the credential data (64 hex characters) |
+
+**Response:**
+```json
 {
   "success": true,
   "data": {

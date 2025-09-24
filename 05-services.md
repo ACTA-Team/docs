@@ -1,414 +1,428 @@
 # Services and Business Logic
 
+<div align="center">
+
+![Services](https://img.shields.io/badge/Services-Business%20Logic-orange?style=for-the-badge&logo=gear&logoColor=white)
+
+</div>
+
 ## Overview
 
-The ACTA API is built with a service-oriented architecture that separates business logic from API routing. The main service component is the `StellarService`, which handles all interactions with the Stellar blockchain and smart contract operations.
+The ACTA API is built with a modular service architecture that separates business logic from API endpoints. This section details the core services that power the credential management system.
 
-## StellarService
+---
 
-The `StellarService` class is the core component responsible for managing credentials on the Stellar blockchain. It provides methods for creating, retrieving, and updating verifiable credentials using Stellar's Soroban smart contracts.
+## Service Architecture
 
-### Class Structure
+### **Core Services**
 
-```typescript
-class StellarService {
-  private server: Server;
-  private sorobanServer: SorobanRpc.Server;
-  private sourceKeypair: Keypair;
-  private networkPassphrase: string;
-  private contractId: string;
+| Service | Purpose | Dependencies |
+|---------|---------|--------------|
+| **CredentialService** | Manages credential lifecycle | StellarService, HashService |
+| **StellarService** | Handles blockchain operations | Stellar SDK |
+| **HashService** | Generates and validates hashes | crypto module |
+| **ValidationService** | Validates input data | joi, custom validators |
 
-  constructor(config: StellarConfig)
-  // Methods for credential management
-}
-```
+---
 
-### Configuration
+## **CredentialService**
 
-The service is initialized with a configuration object containing:
+The main service responsible for credential management operations.
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `secretKey` | string | Stellar secret key for transaction signing |
-| `horizonUrl` | string | Horizon server URL |
-| `sorobanUrl` | string | Soroban RPC server URL |
-| `networkPassphrase` | string | Network identifier |
+### **Methods**
 
-### Core Methods
+#### `createCredential(data, metadata)`
 
-#### generateHash(data: any): string
-
-Generates a SHA-256 hash of the credential data for blockchain storage.
+Creates a new credential on the Stellar blockchain.
 
 **Parameters:**
-- `data`: The credential data object to hash
+- `data` (Object): The credential data to store
+- `metadata` (Object): Additional metadata
 
 **Returns:**
-- A 64-character hexadecimal hash string
+- `Promise<Object>`: Created credential information
 
 **Example:**
-```typescript
-const hash = stellarService.generateHash({
-  holder: "GXXXXXXX...",
-  credentialType: "AcademicDegree",
-  claims: { degree: "Bachelor of Science" }
-});
-// Returns: "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
-```
+```javascript
+const credentialService = new CredentialService();
 
-#### deployContract(): Promise<string>
-
-Deploys a new smart contract instance on the Stellar network.
-
-**Returns:**
-- Promise resolving to the contract ID
-
-**Process:**
-1. Loads the WASM contract bytecode
-2. Creates a deployment transaction
-3. Submits to the network
-4. Returns the generated contract ID
-
-**Note:** Currently uses a fixed contract ID for all operations.
-
-#### createCredential(data: any, metadata?: any): Promise<CredentialResponse>
-
-Creates a new verifiable credential on the blockchain.
-
-**Parameters:**
-- `data`: The credential data to store
-- `metadata`: Optional metadata about the credential
-
-**Returns:**
-- Promise resolving to a `CredentialResponse` object
-
-**Process:**
-1. Validates the source account balance (minimum 10 XLM required)
-2. Generates a hash of the credential data
-3. Creates a smart contract transaction
-4. Submits the transaction to the network
-5. Returns transaction details and credential information
-
-**Example:**
-```typescript
-const credential = await stellarService.createCredential({
-  holder: "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  credentialType: "DriverLicense",
-  claims: {
-    licenseNumber: "DL123456789",
-    class: "Class A"
+const result = await credentialService.createCredential({
+  type: "UniversityDegree",
+  credentialSubject: {
+    id: "did:example:123",
+    degree: {
+      type: "BachelorDegree",
+      name: "Computer Science"
+    }
   }
 }, {
-  issuer: "DMV",
-  expirationDate: "2029-01-15T23:59:59Z"
+  issuer: "University of Technology",
+  subject: "John Doe"
 });
 ```
 
-#### getCredential(contractId: string): Promise<any>
+#### `getCredential(contractId)`
 
-Retrieves credential information from the blockchain.
+Retrieves credential information by contract ID.
 
 **Parameters:**
-- `contractId`: The Stellar contract ID
+- `contractId` (String): The Stellar contract ID
 
 **Returns:**
-- Promise resolving to credential data
+- `Promise<Object>`: Credential information
 
-**Process:**
-1. Validates the contract ID format
-2. Queries the smart contract state
-3. Returns the stored credential information
-
-#### updateCredentialStatus(contractId: string, status: CredentialStatus): Promise<void>
+#### `updateCredentialStatus(contractId, status)`
 
 Updates the status of an existing credential.
 
 **Parameters:**
-- `contractId`: The Stellar contract ID
-- `status`: New status (Active, Revoked, or Suspended)
+- `contractId` (String): The Stellar contract ID
+- `status` (String): New status ("Active", "Revoked", "Suspended")
 
 **Returns:**
-- Promise that resolves when the update is complete
+- `Promise<Object>`: Updated credential information
 
-**Process:**
-1. Validates the contract ID and status
-2. Creates an update transaction
-3. Submits to the network
-4. Confirms the transaction
+#### `getCredentialByHash(hash)`
 
-#### getCredentialByHash(hash: string): Promise<any>
-
-Retrieves credential information using its data hash.
+Retrieves credential information by data hash.
 
 **Parameters:**
-- `hash`: SHA-256 hash of the credential data
+- `hash` (String): SHA-256 hash of credential data
 
 **Returns:**
-- Promise resolving to credential data
-
-**Process:**
-1. Validates the hash format (64 hex characters)
-2. Queries the blockchain for matching credentials
-3. Returns the credential information
-
-## Error Handling
-
-The service implements comprehensive error handling for various scenarios:
-
-### Balance Validation
-
-```typescript
-if (account.balances[0].balance < '10') {
-  throw new Error('Insufficient XLM balance. Minimum 10 XLM required for contract operations.');
-}
-```
-
-### Contract ID Validation
-
-```typescript
-if (!contractId || contractId.length !== 56 || !contractId.startsWith('C')) {
-  throw new Error('Invalid contract ID format');
-}
-```
-
-### Hash Validation
-
-```typescript
-if (!hash || hash.length !== 64 || !/^[a-fA-F0-9]+$/.test(hash)) {
-  throw new Error('Invalid hash format. Hash must be a 64-character hexadecimal string');
-}
-```
-
-### Network Errors
-
-The service handles various network-related errors:
-- Connection timeouts
-- Invalid responses
-- Transaction failures
-- Insufficient fees
-
-## Smart Contract Integration
-
-### Contract Deployment
-
-The service manages smart contract deployment with the following features:
-
-- **WASM Loading**: Loads contract bytecode from the filesystem
-- **Transaction Building**: Creates deployment transactions with proper fees
-- **Network Submission**: Submits transactions to the Stellar network
-- **Result Processing**: Extracts contract IDs from transaction results
-
-### Contract Interaction
-
-#### Method Invocation
-
-The service interacts with deployed contracts through method calls:
-
-```typescript
-// Example contract method call structure
-const transaction = new TransactionBuilder(account, {
-  fee: BASE_FEE,
-  networkPassphrase: this.networkPassphrase,
-})
-.addOperation(
-  Operation.invokeContract({
-    contract: this.contractId,
-    method: 'store_credential',
-    args: [
-      nativeToScVal(hash, { type: 'string' }),
-      nativeToScVal(data, { type: 'string' })
-    ]
-  })
-)
-.setTimeout(30)
-.build();
-```
-
-#### State Queries
-
-Reading contract state to retrieve stored credentials:
-
-```typescript
-const result = await this.sorobanServer.getContractData(
-  this.contractId,
-  nativeToScVal(hash, { type: 'string' })
-);
-```
-
-## Data Types and Interfaces
-
-### CredentialRequest
-
-```typescript
-interface CredentialRequest {
-  data: any;
-  metadata?: {
-    issuer?: string;
-    subject?: string;
-    expirationDate?: string;
-    category?: string;
-  };
-}
-```
-
-### CredentialResponse
-
-```typescript
-interface CredentialResponse {
-  contractId: string;
-  hash: string;
-  transactionHash: string;
-  ledgerSequence: number;
-  createdAt: string;
-}
-```
-
-### CredentialStatus
-
-```typescript
-enum CredentialStatus {
-  Active = 'Active',
-  Revoked = 'Revoked',
-  Suspended = 'Suspended'
-}
-```
-
-### StellarConfig
-
-```typescript
-interface StellarConfig {
-  secretKey: string;
-  horizonUrl: string;
-  sorobanUrl: string;
-  networkPassphrase: string;
-}
-```
-
-## Service Initialization
-
-The service is initialized in the credentials router with environment variable validation:
-
-```typescript
-// Environment validation
-const requiredEnvVars = ['STELLAR_SECRET_KEY', 'STELLAR_HORIZON_URL'];
-const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-
-if (missingVars.length > 0) {
-  throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
-}
-
-// Service initialization
-const stellarService = new StellarService({
-  secretKey: process.env.STELLAR_SECRET_KEY!,
-  horizonUrl: process.env.STELLAR_HORIZON_URL!,
-  sorobanUrl: process.env.STELLAR_SOROBAN_URL || 'https://soroban-testnet.stellar.org',
-  networkPassphrase: process.env.STELLAR_NETWORK_PASSPHRASE || Networks.TESTNET
-});
-```
-
-## Performance Considerations
-
-### Transaction Fees
-
-The service manages transaction fees efficiently:
-- Uses base fees for standard operations
-- Implements fee estimation for complex transactions
-- Handles fee bumping for failed transactions
-
-### Connection Pooling
-
-- Maintains persistent connections to Horizon and Soroban servers
-- Implements connection retry logic
-- Handles server failover scenarios
-
-### Caching
-
-While not implemented in the current version, the service architecture supports:
-- Contract state caching
-- Transaction result caching
-- Account balance caching
-
-## Security Features
-
-### Key Management
-
-- Secure handling of Stellar secret keys
-- Environment-based key configuration
-- No key exposure in logs or responses
-
-### Input Validation
-
-- Comprehensive validation of all input parameters
-- Sanitization of user-provided data
-- Protection against injection attacks
-
-### Transaction Security
-
-- Proper transaction signing
-- Sequence number management
-- Timeout handling for pending transactions
-
-## Testing the Service
-
-### Unit Testing
-
-```typescript
-describe('StellarService', () => {
-  let service: StellarService;
-
-  beforeEach(() => {
-    service = new StellarService({
-      secretKey: 'SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-      horizonUrl: 'https://horizon-testnet.stellar.org',
-      sorobanUrl: 'https://soroban-testnet.stellar.org',
-      networkPassphrase: Networks.TESTNET
-    });
-  });
-
-  it('should generate consistent hashes', () => {
-    const data = { test: 'data' };
-    const hash1 = service.generateHash(data);
-    const hash2 = service.generateHash(data);
-    expect(hash1).toBe(hash2);
-  });
-});
-```
-
-### Integration Testing
-
-```typescript
-describe('StellarService Integration', () => {
-  it('should create and retrieve credentials', async () => {
-    const credentialData = {
-      holder: 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-      credentialType: 'TestCredential'
-    };
-
-    const result = await service.createCredential(credentialData);
-    expect(result.contractId).toBeDefined();
-    expect(result.hash).toBeDefined();
-
-    const retrieved = await service.getCredential(result.contractId);
-    expect(retrieved).toBeDefined();
-  });
-});
-```
-
-## Future Enhancements
-
-### Planned Features
-
-1. **Batch Operations**: Support for creating multiple credentials in a single transaction
-2. **Event Streaming**: Real-time updates for credential status changes
-3. **Advanced Querying**: Support for complex credential searches
-4. **Backup and Recovery**: Automated backup of critical credential data
-
-### Performance Improvements
-
-1. **Connection Pooling**: Implement connection pooling for better performance
-2. **Caching Layer**: Add Redis-based caching for frequently accessed data
-3. **Async Processing**: Background processing for non-critical operations
+- `Promise<Object>`: Credential information
 
 ---
 
-*Next: Learn about [Configuration and Environment Variables](./06-configuration.md) to properly set up your API environment.*
+## **StellarService**
+
+Handles all Stellar blockchain interactions.
+
+### **Configuration**
+
+```javascript
+const stellarService = new StellarService({
+  network: 'testnet', // or 'mainnet'
+  horizonUrl: 'https://horizon-testnet.stellar.org',
+  secretKey: process.env.STELLAR_SECRET_KEY
+});
+```
+
+### **Methods**
+
+#### `deployContract(wasmHash, initArgs)`
+
+Deploys a new smart contract to the Stellar network.
+
+**Parameters:**
+- `wasmHash` (String): Hash of the compiled WASM contract
+- `initArgs` (Array): Initialization arguments
+
+**Returns:**
+- `Promise<String>`: Contract ID
+
+#### `invokeContract(contractId, method, args)`
+
+Invokes a method on an existing contract.
+
+**Parameters:**
+- `contractId` (String): The contract ID
+- `method` (String): Method name to invoke
+- `args` (Array): Method arguments
+
+**Returns:**
+- `Promise<Object>`: Transaction result
+
+#### `getContractData(contractId, key)`
+
+Retrieves data from a contract's storage.
+
+**Parameters:**
+- `contractId` (String): The contract ID
+- `key` (String): Storage key
+
+**Returns:**
+- `Promise<any>`: Stored data
+
+---
+
+## **HashService**
+
+Provides cryptographic hashing functionality.
+
+### **Methods**
+
+#### `generateHash(data)`
+
+Generates a SHA-256 hash of the provided data.
+
+**Parameters:**
+- `data` (Object|String): Data to hash
+
+**Returns:**
+- `String`: 64-character hexadecimal hash
+
+**Example:**
+```javascript
+const hashService = new HashService();
+const hash = hashService.generateHash({
+  type: "UniversityDegree",
+  subject: "John Doe"
+});
+// Returns: "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+```
+
+#### `validateHash(data, expectedHash)`
+
+Validates that data matches the expected hash.
+
+**Parameters:**
+- `data` (Object|String): Data to validate
+- `expectedHash` (String): Expected hash value
+
+**Returns:**
+- `Boolean`: True if hash matches
+
+---
+
+## **ValidationService**
+
+Handles input validation and data sanitization.
+
+### **Schemas**
+
+#### Credential Data Schema
+
+```javascript
+const credentialSchema = {
+  type: Joi.string().required(),
+  credentialSubject: Joi.object().required(),
+  issuer: Joi.string().required(),
+  issuanceDate: Joi.string().isoDate().required()
+};
+```
+
+#### Metadata Schema
+
+```javascript
+const metadataSchema = {
+  issuer: Joi.string().optional(),
+  subject: Joi.string().optional(),
+  expirationDate: Joi.string().isoDate().optional(),
+  category: Joi.string().optional()
+};
+```
+
+### **Methods**
+
+#### `validateCredentialData(data)`
+
+Validates credential data against the schema.
+
+**Parameters:**
+- `data` (Object): Credential data to validate
+
+**Returns:**
+- `Object`: Validation result with errors if any
+
+#### `validateContractId(contractId)`
+
+Validates Stellar contract ID format.
+
+**Parameters:**
+- `contractId` (String): Contract ID to validate
+
+**Returns:**
+- `Boolean`: True if valid format
+
+#### `validateHash(hash)`
+
+Validates hash format (64-character hexadecimal).
+
+**Parameters:**
+- `hash` (String): Hash to validate
+
+**Returns:**
+- `Boolean`: True if valid format
+
+---
+
+## **Error Handling**
+
+### **Service Errors**
+
+All services use a consistent error handling approach:
+
+```javascript
+class ServiceError extends Error {
+  constructor(message, code, statusCode = 500) {
+    super(message);
+    this.name = 'ServiceError';
+    this.code = code;
+    this.statusCode = statusCode;
+  }
+}
+```
+
+### **Common Error Codes**
+
+| Code | Description | HTTP Status |
+|------|-------------|-------------|
+| `VALIDATION_ERROR` | Input validation failed | 400 |
+| `STELLAR_ERROR` | Stellar network error | 500 |
+| `CONTRACT_NOT_FOUND` | Contract doesn't exist | 404 |
+| `INSUFFICIENT_BALANCE` | Not enough XLM for operation | 400 |
+| `NETWORK_ERROR` | Network connectivity issue | 503 |
+
+---
+
+## **Service Integration**
+
+### **Dependency Injection**
+
+Services are injected into controllers using a simple DI container:
+
+```javascript
+class ServiceContainer {
+  constructor() {
+    this.services = new Map();
+  }
+
+  register(name, service) {
+    this.services.set(name, service);
+  }
+
+  get(name) {
+    return this.services.get(name);
+  }
+}
+
+// Usage
+const container = new ServiceContainer();
+container.register('credentialService', new CredentialService());
+container.register('stellarService', new StellarService());
+```
+
+### **Service Lifecycle**
+
+1. **Initialization**: Services are created with configuration
+2. **Registration**: Services are registered in the DI container
+3. **Injection**: Controllers receive service instances
+4. **Execution**: Services handle business logic
+5. **Cleanup**: Resources are properly disposed
+
+---
+
+## **Testing Services**
+
+### **Unit Testing**
+
+Each service includes comprehensive unit tests:
+
+```javascript
+describe('CredentialService', () => {
+  let credentialService;
+  let mockStellarService;
+
+  beforeEach(() => {
+    mockStellarService = {
+      deployContract: jest.fn(),
+      invokeContract: jest.fn()
+    };
+    credentialService = new CredentialService(mockStellarService);
+  });
+
+  test('should create credential successfully', async () => {
+    mockStellarService.deployContract.mockResolvedValue('CONTRACT_ID');
+    
+    const result = await credentialService.createCredential({
+      type: 'TestCredential'
+    });
+
+    expect(result.contractId).toBe('CONTRACT_ID');
+  });
+});
+```
+
+### **Integration Testing**
+
+Integration tests verify service interactions:
+
+```javascript
+describe('Service Integration', () => {
+  test('should create and retrieve credential', async () => {
+    const credentialService = new CredentialService();
+    
+    // Create credential
+    const created = await credentialService.createCredential(testData);
+    
+    // Retrieve credential
+    const retrieved = await credentialService.getCredential(created.contractId);
+    
+    expect(retrieved.hash).toBe(created.hash);
+  });
+});
+```
+
+---
+
+## **Performance Considerations**
+
+### **Caching Strategy**
+
+- **Contract Data**: Cache frequently accessed contract data
+- **Hash Calculations**: Cache computed hashes for large datasets
+- **Validation Results**: Cache validation results for repeated requests
+
+### **Optimization Techniques**
+
+1. **Batch Operations**: Group multiple blockchain operations
+2. **Connection Pooling**: Reuse Stellar network connections
+3. **Async Processing**: Use queues for non-critical operations
+4. **Data Compression**: Compress large credential data
+
+---
+
+## **Monitoring and Logging**
+
+### **Service Metrics**
+
+Key metrics tracked for each service:
+
+- **Response Time**: Average and 95th percentile
+- **Error Rate**: Percentage of failed operations
+- **Throughput**: Operations per second
+- **Resource Usage**: Memory and CPU consumption
+
+### **Logging Strategy**
+
+```javascript
+const logger = require('./utils/logger');
+
+class CredentialService {
+  async createCredential(data) {
+    logger.info('Creating credential', { 
+      type: data.type,
+      timestamp: new Date().toISOString()
+    });
+
+    try {
+      const result = await this.processCredential(data);
+      logger.info('Credential created successfully', { 
+        contractId: result.contractId 
+      });
+      return result;
+    } catch (error) {
+      logger.error('Failed to create credential', { 
+        error: error.message,
+        stack: error.stack 
+      });
+      throw error;
+    }
+  }
+}
+```
+
+---
+
+*Next: Learn about [Configuration](./06-configuration.md) to understand how to configure the API for different environments.*

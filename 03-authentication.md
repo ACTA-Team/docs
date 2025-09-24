@@ -149,10 +149,10 @@ function getStellarService(): StellarService {
 
 #### 1. Environment Variables
 ```bash
-# ✅ Good: Store in environment variables
+# Good: Store in environment variables
 STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-# ❌ Bad: Never hardcode in source code
+# Bad: Never hardcode in source code
 const secretKey = "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 ```
 
@@ -267,7 +267,7 @@ The API implements secure error handling to prevent information leakage while pr
 ### Secure Error Responses
 
 ```typescript
-// ✅ Good: Secure error handling
+// Good: Secure error handling
 app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   // Log error for debugging (use proper logging service in production)
   // Error: ${error.message}
@@ -281,7 +281,7 @@ app.use((error: Error, req: express.Request, res: express.Response, next: expres
   });
 });
 
-// ❌ Bad: Exposing sensitive information
+// Bad: Exposing sensitive information
 app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   res.status(500).json({
     error: error.message,
