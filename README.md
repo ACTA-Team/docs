@@ -25,14 +25,14 @@ This documentation is organized into the following sections:
 
 ### Get up and running in 3 simple steps!
 
-### 1️⃣ **Clone and Setup**
+### **First Step: Clone and Setup**
 ```bash
 git clone <repository-url>
 cd acta-api
 cp .env.example .env
 ```
 
-### 2️⃣ **Configure Environment**
+### **Second Step: Configure Environment**
 Edit `.env` with your Stellar network configuration:
 ```bash
 # Required: Your Stellar secret key
@@ -43,7 +43,7 @@ STELLAR_NETWORK=testnet
 STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
 ```
 
-### 3️⃣ **Install and Run**
+### **Third Step: Install and Run**
 ```bash
 npm install
 npm run dev
