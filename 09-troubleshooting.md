@@ -44,9 +44,11 @@ async function testConnection() {
   try {
     const server = new Server(process.env.STELLAR_HORIZON_URL);
     const ledger = await server.ledgers().limit(1).call();
-    console.log('✅ Connection successful:', ledger.records[0].sequence);
+    // Connection successful - ledger sequence: ${ledger.records[0].sequence}
+    return { success: true, sequence: ledger.records[0].sequence };
   } catch (error) {
-    console.error('❌ Connection failed:', error.message);
+    // Connection failed - handle error appropriately
+    throw new Error(`Connection failed: ${error.message}`);
   }
 }
 ```
@@ -70,13 +72,15 @@ async function testConnection() {
 ```javascript
 // For testnet only
 const response = await fetch(`https://friendbot.stellar.org?addr=${publicKey}`);
-console.log('Account funded:', response.ok);
+// Account funding status: ${response.ok ? 'successful' : 'failed'}
+return { funded: response.ok };
 ```
 
 3. **Check Account Balance:**
 ```javascript
 const account = await server.loadAccount(publicKey);
-console.log('Balances:', account.balances);
+// Account balances retrieved successfully
+return { balances: account.balances };
 ```
 
 ### 2. Smart Contract Issues
@@ -97,9 +101,11 @@ async function checkContract(contractId) {
   try {
     const server = new SorobanRpc.Server(process.env.STELLAR_SOROBAN_URL);
     const contract = await server.getContractData(contractId);
-    console.log('✅ Contract found:', contract);
+    // Contract found and accessible
+    return { found: true, contract };
   } catch (error) {
-    console.error('❌ Contract not found:', error.message);
+    // Contract not found - verify deployment
+    throw new Error(`Contract not found: ${error.message}`);
   }
 }
 ```
@@ -116,7 +122,8 @@ const isValidContractId = (id) => {
 ```javascript
 // List available contract methods
 const contractSpec = await server.getContractSpec(contractId);
-console.log('Available methods:', contractSpec.methods);
+// Available methods retrieved successfully
+return { methods: contractSpec.methods };
 ```
 
 #### Problem: "Transaction failed" or "Soroban transaction error"
@@ -149,7 +156,8 @@ const params = [
 ```javascript
 // Verify account has necessary permissions
 const account = await server.loadAccount(sourceKeypair.publicKey());
-console.log('Account signers:', account.signers);
+// Account signers retrieved for verification
+return { signers: account.signers };
 ```
 
 ### 3. API Authentication and Authorization
@@ -218,8 +226,12 @@ async function retryWithBackoff(fn, maxRetries = 3) {
 ```javascript
 // Monitor rate limit status
 const response = await fetch('/api/credentials');
-console.log('Rate limit remaining:', response.headers.get('X-RateLimit-Remaining'));
-console.log('Rate limit reset:', response.headers.get('X-RateLimit-Reset'));
+const rateLimitInfo = {
+  remaining: response.headers.get('X-RateLimit-Remaining'),
+  reset: response.headers.get('X-RateLimit-Reset')
+};
+// Rate limit information retrieved
+return rateLimitInfo;
 ```
 
 3. **Optimize Request Patterns:**
@@ -334,10 +346,12 @@ const credentials = await getCredentials({
 ```javascript
 // Check memory usage
 const memUsage = process.memoryUsage();
-console.log('Memory usage:', {
+const memoryInfo = {
   rss: `${Math.round(memUsage.rss / 1024 / 1024)}MB`,
   heapUsed: `${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`
-});
+};
+// Memory usage information retrieved
+return memoryInfo;
 ```
 
 ## Error Code Reference
@@ -394,8 +408,11 @@ A: Use the Stellar SDK:
 ```javascript
 const { Keypair } = require('stellar-sdk');
 const keypair = Keypair.random();
-console.log('Public Key:', keypair.publicKey());
-console.log('Secret Key:', keypair.secret());
+// Store these keys securely - never share the secret key
+return {
+  publicKey: keypair.publicKey(),
+  secretKey: keypair.secret()
+};
 ```
 
 **Q: Can I use the API without a Stellar account?**

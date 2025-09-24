@@ -132,7 +132,8 @@ function getStellarService(): StellarService {
     // Validate secret key format
     try {
       const keypair = require('@stellar/stellar-sdk').Keypair.fromSecret(secretKey);
-      console.log('✅ Using Stellar account:', keypair.publicKey());
+      // Stellar account validated successfully
+      // Public key: ${keypair.publicKey()}
     } catch (keyError) {
       throw new Error('Invalid STELLAR_SECRET_KEY format. Must be a valid Stellar secret key starting with S');
     }
@@ -268,7 +269,8 @@ The API implements secure error handling to prevent information leakage while pr
 ```typescript
 // ✅ Good: Secure error handling
 app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Unhandled error:', error);
+  // Log error for debugging (use proper logging service in production)
+  // Error: ${error.message}
   
   // Don't expose internal error details in production
   const isDevelopment = process.env.NODE_ENV === 'development';
@@ -373,12 +375,12 @@ if (process.env.NODE_ENV === 'production') {
   };
 
   https.createServer(options, app).listen(443, () => {
-    console.log('HTTPS Server running on port 443');
+    // HTTPS Server started on port 443
   });
 } else {
   // HTTP for development
   app.listen(PORT, () => {
-    console.log(`HTTP Server running on port ${PORT}`);
+    // HTTP Server started on port ${PORT}
   });
 }
 ```

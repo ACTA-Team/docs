@@ -43,25 +43,27 @@ async function createAcademicCredential() {
 
     const response = await axios.post(`${API_BASE_URL}/v1/credentials`, credentialData);
     
-    console.log('Academic credential created successfully:');
-    console.log('Contract ID:', response.data.data.contractId);
-    console.log('Hash:', response.data.data.hash);
-    console.log('Transaction Hash:', response.data.data.transactionHash);
+    // Academic credential created successfully
+    // Contract ID: ${response.data.data.contractId}
+    // Hash: ${response.data.data.hash}
+    // Transaction Hash: ${response.data.data.transactionHash}
     
     return response.data.data;
   } catch (error) {
-    console.error('Error creating academic credential:', error.response?.data || error.message);
-    throw error;
+    // Handle error appropriately in your application
+    throw new Error(`Error creating academic credential: ${error.response?.data?.message || error.message}`);
   }
 }
 
 // Usage
 createAcademicCredential()
   .then(credential => {
-    console.log('Credential created:', credential);
+    // Credential created successfully
+    return credential;
   })
   .catch(error => {
-    console.error('Failed to create credential:', error);
+    // Handle credential creation failure
+    throw error;
   });
 ```
 
@@ -99,8 +101,8 @@ async function createProfessionalCertification() {
     const response = await axios.post(`${API_BASE_URL}/v1/credentials`, certificationData);
     return response.data.data;
   } catch (error) {
-    console.error('Error creating certification:', error.response?.data || error.message);
-    throw error;
+    // Handle error appropriately in your application
+    throw new Error(`Error creating certification: ${error.response?.data?.message || error.message}`);
   }
 }
 ```

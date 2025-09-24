@@ -1,30 +1,65 @@
-# Introduction
+# 📖 Introduction
 
-## What is ACTA API?
+<div align="center">
+
+![ACTA Logo](https://img.shields.io/badge/ACTA-Autonomous%20Credential%20Trust%20Architecture-blue?style=for-the-badge&logo=stellar&logoColor=white)
+
+</div>
+
+## 🌟 What is ACTA API?
 
 The **ACTA API** (Autonomous Credential Trust Architecture) is a comprehensive REST API designed to manage verifiable credentials on the Stellar blockchain. It provides a secure, scalable, and decentralized solution for creating, storing, and verifying digital credentials using Soroban smart contracts.
 
-## System Architecture
+<div align="center">
 
-The ACTA API follows a modern, microservices-inspired architecture built on top of the Stellar network:
+### 🎯 **Mission Statement**
+*Empowering trust through decentralized credential management on the Stellar blockchain*
 
+</div>
+
+---
+
+## 🏗️ System Architecture
+
+<div align="center">
+
+### Modern, microservices-inspired architecture built on Stellar
+
+</div>
+
+```mermaid
+graph LR
+    A[👥 Client Applications] --> B[🔒 ACTA API]
+    B --> C[⭐ Stellar Network]
+    
+    subgraph "Client Layer"
+        A1[🌐 Web Apps]
+        A2[📱 Mobile Apps]
+        A3[🔗 dApps]
+    end
+    
+    subgraph "API Gateway"
+        B1[🌐 REST Endpoints]
+        B2[🔧 Business Logic]
+        B3[✅ Validation]
+    end
+    
+    subgraph "Blockchain Layer"
+        C1[🌟 Horizon API]
+        C2[🤖 Soroban RPC]
+        C3[📜 Smart Contracts]
+    end
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Client Apps   │    │   ACTA API      │    │ Stellar Network │
-│                 │    │                 │    │                 │
-│ • Web Apps      │◄──►│ • REST Endpoints│◄──►│ • Horizon API   │
-│ • Mobile Apps   │    │ • Business Logic│    │ • Soroban RPC   │
-│ • dApps         │    │ • Validation    │    │ • Smart Contract│
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
 
-### Core Components
+### 🔧 **Core Components**
 
-1. **Express.js Server**: High-performance Node.js web server
-2. **Stellar SDK Integration**: Direct integration with Stellar blockchain
-3. **Soroban Smart Contracts**: Business logic execution on-chain
-4. **Security Layer**: CORS, Helmet, and input validation
-5. **TypeScript**: Type-safe development environment
+| Layer | Component | Description |
+|-------|-----------|-------------|
+| **🌐 API** | Express.js Server | High-performance Node.js web server |
+| **⭐ Blockchain** | Stellar SDK Integration | Direct integration with Stellar blockchain |
+| **🤖 Smart Contracts** | Soroban Contracts | Business logic execution on-chain |
+| **🛡️ Security** | CORS & Helmet | Cross-origin protection and security headers |
+| **📝 Language** | TypeScript | Type-safe development environment |
 
 ## Key Features
 

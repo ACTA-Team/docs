@@ -1,48 +1,71 @@
-# API Endpoints
+# 🌐 API Endpoints
 
-## Overview
+<div align="center">
+
+![API Endpoints](https://img.shields.io/badge/API-Endpoints-4CAF50?style=for-the-badge&logo=api&logoColor=white)
+![REST](https://img.shields.io/badge/REST-API-FF6B6B?style=for-the-badge&logo=rest&logoColor=white)
+
+</div>
+
+## 📋 Overview
 
 The ACTA API provides a comprehensive set of RESTful endpoints for managing verifiable credentials on the Stellar blockchain. All endpoints return JSON responses and follow standard HTTP status codes.
 
-## Base URL
+<div align="center">
 
-- **Development**: `http://localhost:8000`
-- **Production**: `https://acta.up.railway.app`
+### 🌍 **Base URLs**
 
-## Response Format
+| Environment | URL | Status |
+|-------------|-----|--------|
+| 🔧 **Development** | `http://localhost:8000` | ✅ Active |
+| 🚀 **Production** | `https://acta.up.railway.app` | ✅ Active |
 
-All API responses follow a consistent format:
+</div>
 
-### Success Response
+---
+
+## 📊 Response Format
+
+All API responses follow a consistent format for better predictability and error handling:
+
+### ✅ **Success Response**
 ```json
 {
   "success": true,
   "data": {
-    // Response data
+    // Response data here
   }
 }
 ```
 
-### Error Response
+### ❌ **Error Response**
 ```json
 {
-  "error": "Error message",
-  "details": "Additional error details (development only)"
+  "error": "Human-readable error message",
+  "details": "Additional technical details (development only)"
 }
 ```
 
-## Root Endpoints
+---
 
-### GET /
+## 🏠 **Root Endpoints**
+
+### 🏡 `GET /`
 
 Returns basic API information and available endpoints.
 
-**Request:**
+<div align="center">
+
+**📍 Endpoint:** `GET /`
+
+</div>
+
+**📤 Request:**
 ```http
 GET /
 ```
 
-**Response:**
+**📥 Response:**
 ```json
 {
   "message": "ACTA API - Stellar Credential Management",
@@ -54,44 +77,90 @@ GET /
 }
 ```
 
-**Status Codes:**
-- `200 OK`: Success
+**📊 Status Codes:**
+- `200 OK`: ✅ Success
 
 ---
 
-### GET /health
+### 🏓 `GET /ping`
 
-Health check endpoint for monitoring and load balancers.
+Simple connectivity test endpoint.
 
-**Request:**
+<div align="center">
+
+**📍 Endpoint:** `GET /ping`
+
+</div>
+
+**📤 Request:**
+```http
+GET /ping
+```
+
+**📥 Response:**
+```json
+{
+  "message": "pong",
+  "timestamp": "2025-01-15T10:30:00.000Z",
+  "port": 8000
+}
+```
+
+**📊 Status Codes:**
+- `200 OK`: ✅ Connection successful
+
+---
+
+### 🩺 `GET /health`
+
+Comprehensive health check endpoint for monitoring and load balancers.
+
+<div align="center">
+
+**📍 Endpoint:** `GET /health`
+
+</div>
+
+**📤 Request:**
 ```http
 GET /health
 ```
 
-**Response:**
+**📥 Response:**
 ```json
 {
   "status": "OK",
   "timestamp": "2025-01-15T10:30:00.000Z",
-  "service": "Stellar Credential API"
+  "service": "Stellar Credential API",
+  "port": 8000,
+  "env": {
+    "NODE_ENV": "production",
+    "STELLAR_NETWORK": "testnet"
+  }
 }
 ```
 
-**Status Codes:**
-- `200 OK`: Service is healthy
-- `503 Service Unavailable`: Service is unhealthy
+**📊 Status Codes:**
+- `200 OK`: ✅ Service is healthy
+- `503 Service Unavailable`: ❌ Service is unhealthy
 
 ---
 
-## Credentials Endpoints
+## 🔐 **Credentials Endpoints**
 
-All credential endpoints are prefixed with `/credentials`.
+All credential endpoints are prefixed with `/credentials` and handle verifiable credential operations on the Stellar blockchain.
 
-### POST /credentials
+### 📝 `POST /credentials`
 
 Creates a new verifiable credential on the Stellar blockchain.
 
-**Request:**
+<div align="center">
+
+**📍 Endpoint:** `POST /credentials`
+
+</div>
+
+**📤 Request:**
 ```http
 POST /credentials
 Content-Type: application/json
@@ -119,18 +188,168 @@ Content-Type: application/json
 }
 ```
 
-**Request Body Parameters:**
+**📋 Request Body Parameters:**
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `data` | Object | Yes | The credential data to be stored |
-| `metadata` | Object | No | Additional metadata about the credential |
-| `metadata.issuer` | String | No | The issuer of the credential |
-| `metadata.subject` | String | No | The subject of the credential |
-| `metadata.expirationDate` | String | No | ISO 8601 expiration date |
+| `data` | Object | ✅ Yes | The credential data to be stored on blockchain |
+| `metadata` | Object | ❌ No | Additional metadata about the credential |
+| `metadata.issuer` | String | ❌ No | The issuer of the credential |
+| `metadata.subject` | String | ❌ No | The subject of the credential |
+| `metadata.expirationDate` | String | ❌ No | ISO 8601 expiration date |
 
-**Response:**
+**📥 Response:**
 ```json
+{
+  "success": true,
+  "data": {
+    "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "hash": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+    "transactionHash": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+    "ledgerSequence": 12345678,
+    "createdAt": "2025-01-15T10:30:00.000Z"
+  }
+}
+```
+
+**📊 Status Codes:**
+- `201 Created`: ✅ Credential created successfully
+- `400 Bad Request`: ❌ Missing required field: data
+- `500 Internal Server Error`: ❌ Failed to create credential
+
+---
+
+### 🔍 `GET /credentials/:contractId`
+
+Retrieves credential information by contract ID.
+
+<div align="center">
+
+**📍 Endpoint:** `GET /credentials/:contractId`
+
+</div>
+
+**📤 Request:**
+```http
+GET /credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+
+**📋 Path Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `contractId` | String | ✅ Yes | The Stellar contract ID of the credential |
+
+**📥 Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "hash": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+    "status": "Active"
+  }
+}
+```
+
+**📊 Status Codes:**
+- `200 OK`: ✅ Credential found
+- `400 Bad Request`: ❌ Contract ID is required
+- `500 Internal Server Error`: ❌ Failed to get credential
+
+---
+
+### 🔄 `PATCH /credentials/:contractId/status`
+
+Updates the status of an existing credential.
+
+<div align="center">
+
+**📍 Endpoint:** `PATCH /credentials/:contractId/status`
+
+</div>
+
+**📤 Request:**
+```http
+PATCH /credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/status
+Content-Type: application/json
+
+{
+  "status": "Revoked"
+}
+```
+
+**📋 Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `contractId` | String | ✅ Yes | The Stellar contract ID (path parameter) |
+| `status` | String | ✅ Yes | New status: "Active", "Revoked", or "Suspended" |
+
+**📥 Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "status": "Revoked",
+    "updatedAt": "2025-01-15T10:30:00.000Z"
+  }
+}
+```
+
+**📊 Status Codes:**
+- `200 OK`: ✅ Status updated successfully
+- `400 Bad Request`: ❌ Invalid status or missing contract ID
+- `500 Internal Server Error`: ❌ Failed to update status
+
+---
+
+### 🔎 `GET /credentials/hash/:hash`
+
+Retrieves credential information by data hash.
+
+<div align="center">
+
+**📍 Endpoint:** `GET /credentials/hash/:hash`
+
+</div>
+
+**📤 Request:**
+```http
+GET /credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
+```
+
+**📋 Path Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `hash` | String | ✅ Yes | 64-character hexadecimal hash of credential data |
+
+**📥 Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "hash": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+    "status": "Active",
+    "data": {
+      // Original credential data
+    },
+    "metadata": {
+      // Original metadata
+    },
+    "createdAt": "2025-01-15T10:30:00.000Z"
+  }
+}
+```
+
+**📊 Status Codes:**
+- `200 OK`: ✅ Credential found
+- `400 Bad Request`: ❌ Invalid hash format
+- `404 Not Found`: ❌ Credential not found
+- `500 Internal Server Error`: ❌ Failed to get credential
 {
   "success": true,
   "data": {
@@ -454,8 +673,8 @@ async function createCredential(credentialData) {
     });
     return response.data;
   } catch (error) {
-    console.error('Error creating credential:', error.response.data);
-    throw error;
+    // Handle error appropriately in your application
+    throw new Error(`Failed to create credential: ${error.response?.data?.message || error.message}`);
   }
 }
 
@@ -465,8 +684,8 @@ async function getCredential(contractId) {
     const response = await axios.get(`${API_BASE_URL}/credentials/${contractId}`);
     return response.data;
   } catch (error) {
-    console.error('Error getting credential:', error.response.data);
-    throw error;
+    // Handle error appropriately in your application
+    throw new Error(`Failed to get credential: ${error.response?.data?.message || error.message}`);
   }
 }
 ```

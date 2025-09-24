@@ -842,13 +842,13 @@ async function backupStellarAccount() {
       backupDate: new Date().toISOString()
     };
     
-    console.log('Stellar Account Backup:', JSON.stringify(backup, null, 2));
-    
-    // Save to secure storage
+    // Backup created successfully - save to secure storage
     // await saveToSecureStorage(backup);
+    return backup;
     
   } catch (error) {
-    console.error('Backup failed:', error);
+    // Backup failed - handle error appropriately
+    throw new Error(`Backup failed: ${error.message}`);
   }
 }
 
@@ -887,7 +887,7 @@ const cache = (duration = 300) => {
       
       next();
     } catch (error) {
-      console.error('Cache error:', error);
+      // Cache error - continue without caching
       next();
     }
   };

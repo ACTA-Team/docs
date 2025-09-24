@@ -422,19 +422,19 @@ const requiredVars = [
   'STELLAR_HORIZON_URL'
 ];
 
-console.log('Validating configuration...');
+// Validating configuration...
 
 for (const varName of requiredVars) {
   const value = process.env[varName];
   if (!value) {
-    console.error(`❌ Missing: ${varName}`);
+    // Missing required variable: ${varName}
     process.exit(1);
   } else {
-    console.log(`✅ Found: ${varName}`);
+    // Found required variable: ${varName}
   }
 }
 
-console.log('✅ Configuration is valid!');
+// Configuration is valid!
 ```
 
 Run the validation script:
