@@ -5,7 +5,7 @@
 ## Getting Started
 
 * [Introduction](01-introduction.md)
-* [Setup and Installation](02-setup.md)
+* [API Integration Setup](02-setup.md)
 * [Authentication and Security](03-authentication.md)
 
 ## API Reference
@@ -22,3 +22,7 @@
 ## Support
 
 * [Troubleshooting and FAQ](09-troubleshooting.md)
+
+## Development
+
+* [Contributors Guide](10-contributors.md)

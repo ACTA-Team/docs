@@ -12,7 +12,7 @@ This documentation is organized into the following sections:
 | Section | Description | Status |
 |---------|-------------|--------|
 | **[Introduction](./01-introduction.md)** | Overview of the ACTA API, architecture, and core concepts | Complete |
-| **[Setup and Installation](./02-setup.md)** | Complete setup guide for development and testing | Complete |
+| **[API Integration Setup](./02-setup.md)** | Quick integration guide for using the hosted ACTA API | Complete |
 | **[Authentication and Security](./03-authentication.md)** | Security implementation and best practices | Complete |
 | **[API Endpoints](./04-endpoints.md)** | Detailed reference for all API endpoints | Complete |
 | **[Services](./05-services.md)** | Core services and business logic documentation | Complete |
@@ -20,34 +20,55 @@ This documentation is organized into the following sections:
 | **[Examples and Use Cases](./07-examples.md)** | Practical examples and integration patterns | Complete |
 | **[Deployment Guide](./08-deployment.md)** | Production deployment and infrastructure setup | Complete |
 | **[Troubleshooting and FAQ](./09-troubleshooting.md)** | Common issues and solutions | Complete |
+| **[Contributors Guide](./10-contributors.md)** | Development setup for contributors and self-hosting | Complete |
 
 ## Quick Start
 
-### Get up and running in 3 simple steps!
+### Integrate ACTA API in 3 simple steps!
 
-### **First Step: Clone and Setup**
+### **First Step: Get Your Stellar Account**
+Create a Stellar account for credential operations:
 ```bash
-git clone <repository-url>
-cd acta-api
-cp .env.example .env
+# For testing, get a testnet account at:
+# https://laboratory.stellar.org/#account-creator
 ```
 
-### **Second Step: Configure Environment**
-Edit `.env` with your Stellar network configuration:
-```bash
-# Required: Your Stellar secret key
-STELLAR_SECRET_KEY=your_stellar_secret_key_here
+### **Second Step: Make Your First API Call**
+The ACTA API is already deployed and ready to use:
+```javascript
+// Create a credential
+const response = await fetch('https://acta-api.railway.app/api/credentials', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    recipient: "YOUR_STELLAR_PUBLIC_KEY",
+    issuer: "YOUR_STELLAR_PUBLIC_KEY", 
+    credentialType: "certificate",
+    metadata: {
+      title: "My First Credential",
+      description: "Testing ACTA integration"
+    }
+  })
+});
 
-# Network configuration (testnet/mainnet)
-STELLAR_NETWORK=testnet
-STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+const result = await response.json();
+console.log('Credential created:', result);
 ```
 
-### **Third Step: Install and Run**
-```bash
-npm install
-npm run dev
+### **Third Step: Verify and Retrieve**
+```javascript
+// Get credential by ID
+const credential = await fetch(`https://acta-api.railway.app/api/credentials/${credentialId}`);
+const credentialData = await credential.json();
 ```
+
+---
+
+## For Contributors and Self-Hosting
+
+If you want to contribute to ACTA or run your own instance, see the [Setup and Installation](./02-setup.md) guide for repository setup instructions.
 
 ### **Test the API**
 ```bash

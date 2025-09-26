@@ -1,265 +1,218 @@
-# Setup and Installation
+# API Integration Setup
 
-## System Requirements
+## Getting Started with ACTA API
 
-Before installing the ACTA API, ensure your system meets the following requirements:
+The ACTA API is a hosted service that you can integrate directly into your applications. No installation required!
 
-### Minimum Requirements
-- **Node.js**: Version 18.0 or higher
-- **npm**: Version 8.0 or higher (comes with Node.js)
-- **Memory**: 2GB RAM minimum
-- **Storage**: 1GB free disk space
-- **Network**: Stable internet connection for Stellar network access
+**Base URL:** `https://acta-api.railway.app`
 
-### Recommended Requirements
-- **Node.js**: Version 20.0 or higher
-- **npm**: Version 10.0 or higher
-- **Memory**: 4GB RAM or more
-- **Storage**: 5GB free disk space
-- **Network**: High-speed internet connection
+## Prerequisites
 
-### Operating System Support
-- **Linux**: Ubuntu 20.04+, CentOS 8+, Debian 11+
-- **macOS**: macOS 12.0 (Monterey) or higher
-- **Windows**: Windows 10/11 with WSL2 recommended
+Before integrating with ACTA API, you'll need:
 
-## Installation Steps
+### Required
+- **Stellar Account**: A Stellar blockchain account for credential operations
+- **Basic Knowledge**: Understanding of REST APIs and HTTP requests
+- **Network Access**: Internet connection to reach the ACTA API
 
-### 1. Clone the Repository
+### Recommended
+- **API Client**: Tools like Postman, curl, or your preferred HTTP client
+- **Development Environment**: Node.js, Python, or your preferred programming language
 
-```bash
-# Clone the ACTA API repository
-git clone https://github.com/your-org/ACTA-api.git
+## Quick Integration Steps
 
-# Navigate to the project directory
-cd ACTA-api
-```
+### 1. Get Your Stellar Account
 
-### 2. Install Dependencies
+For testing and development, create a testnet account:
 
-```bash
-# Install all required dependencies
-npm install
-
-# Verify installation
-npm list --depth=0
-```
-
-### 3. Environment Configuration
-
-Copy the example environment file and configure it:
-
-```bash
-# Copy the example environment file
-cp .env.example .env
-```
-
-Edit the `.env` file with your configuration:
-
-```env
-# Stellar Configuration
-# ===================
-
-# Stellar Network: "mainnet" or "testnet"
-STELLAR_NETWORK=testnet
-
-# Stellar Secret Key (required)
-# For testnet, you can get one from: https://laboratory.stellar.org/#account-creator
-# For mainnet, use your actual funded account secret key
-# IMPORTANT: Keep this secret and never commit it to version control!
-STELLAR_SECRET_KEY=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-# Stellar Horizon Server URL (optional)
-# Leave empty to use default for the selected network
-# Testnet default: https://horizon-testnet.stellar.org
-# Mainnet default: https://horizon.stellar.org
-STELLAR_HORIZON_URL=
-
-# Server Configuration
-# ===================
-
-# Port for the API server
-PORT=3000
-
-# Node environment
-NODE_ENV=development
-
-# Security Configuration
-# =====================
-
-# JWT Secret for authentication (if implemented)
-JWT_SECRET=your-super-secret-jwt-key-here
-
-# API Key Secret for API key generation (if implemented)
-API_KEY_SECRET=your-api-key-secret-here
-
-# CORS Configuration
-# ==================
-
-# Allowed origins for CORS (comma-separated)
-ALLOWED_ORIGINS=http://localhost:8000,http://localhost:3001,https://yourdomain.com
-
-# Database Configuration (if applicable)
-# ====================================
-
-# Database connection string (if using a database)
-DATABASE_URL=postgresql://username:password@localhost:5432/acta_db
-
-# Logging Configuration
-# ====================
-
-# Log level: error, warn, info, debug
-LOG_LEVEL=info
-
-# Log format: json, simple
-LOG_FORMAT=simple
-```
-
-## Stellar Network Setup
-
-### Getting a Stellar Account
-
-#### For Testnet (Development)
-
-1. Visit the [Stellar Laboratory](https://laboratory.stellar.org/#account-creator)
+**Option A: Using Stellar Laboratory (Recommended)**
+1. Visit [Stellar Laboratory](https://laboratory.stellar.org/#account-creator)
 2. Click "Generate keypair" to create a new account
-3. Copy the **Secret Key** (starts with 'S')
-4. Click "Fund account" to add test XLM to your account
-5. Add the secret key to your `.env` file
+3. Copy both the **Public Key** and **Secret Key**
+4. Click "Fund account" to add test XLM
 
-#### For Mainnet (Production)
+**Option B: Using Stellar SDK**
+```javascript
+const StellarSdk = require('stellar-sdk');
+const pair = StellarSdk.Keypair.random();
 
-1. Create a Stellar account using a wallet like:
-   - [Stellar Wallet](https://wallet.stellar.org/)
-   - [Lobstr](https://lobstr.co/)
-   - [StellarTerm](https://stellarterm.com/)
-2. Fund your account with XLM (minimum 5 XLM recommended)
-3. Export your secret key securely
-4. Add the secret key to your `.env` file
+console.log('Public Key:', pair.publicKey());
+console.log('Secret Key:', pair.secret());
+```
 
-### Verifying Stellar Configuration
+### 2. Test API Connection
 
-Run the verification script to ensure your Stellar setup is correct:
+Verify the API is accessible:
 
 ```bash
-# Verify Stellar configuration
-npm run verify-stellar
+# Test API connectivity
+curl https://acta-api.railway.app/health
+
+# Expected response:
+# {
+#   "status": "OK",
+#   "timestamp": "2025-01-XX:XX:XX.XXXZ",
+#   "service": "Stellar Credential API"
+# }
 ```
 
-If the verification script doesn't exist, you can manually verify by starting the API:
+### 3. Make Your First API Call
+
+Create your first credential:
 
 ```bash
-# Start the API in development mode
-npm run dev
+# Using curl
+curl -X POST https://acta-api.railway.app/api/credentials \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipient": "YOUR_STELLAR_PUBLIC_KEY",
+    "issuer": "YOUR_STELLAR_PUBLIC_KEY",
+    "credentialType": "certificate",
+    "metadata": {
+      "title": "My First Credential",
+      "description": "Testing ACTA integration"
+    }
+  }'
 ```
 
-Look for these log messages:
-```
-Using Stellar account: GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-Stellar Network: Testnet
-Horizon URL: https://horizon-testnet.stellar.org
-```
+**Using JavaScript/Node.js:**
+```javascript
+const response = await fetch('https://acta-api.railway.app/api/credentials', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    recipient: "YOUR_STELLAR_PUBLIC_KEY",
+    issuer: "YOUR_STELLAR_PUBLIC_KEY",
+    credentialType: "certificate",
+    metadata: {
+      title: "My First Credential",
+      description: "Testing ACTA integration"
+    }
+  })
+});
 
-## Development Setup
-
-### 1. Start Development Server
-
-```bash
-# Start the API in development mode with hot reload
-npm run dev
-```
-
-The API will be available at `http://localhost:8000` (or your configured PORT).
-
-### 2. Verify Installation
-
-Test the API endpoints:
-
-```bash
-# Test the root endpoint
-curl http://localhost:8000/
-
-# Test the health endpoint
-curl http://localhost:8000/health
+const result = await response.json();
+console.log('Credential created:', result);
 ```
 
-Expected responses:
+**Using Python:**
+```python
+import requests
 
-**Root endpoint (`/`)**:
-```json
-{
-  "message": "ACTA API - Stellar Credential Management",
-  "version": "1.0.0",
-  "endpoints": {
-    "health": "/health",
-    "credentials": "/credentials"
+url = "https://acta-api.railway.app/api/credentials"
+data = {
+    "recipient": "YOUR_STELLAR_PUBLIC_KEY",
+    "issuer": "YOUR_STELLAR_PUBLIC_KEY",
+    "credentialType": "certificate",
+    "metadata": {
+        "title": "My First Credential",
+        "description": "Testing ACTA integration"
+    }
+}
+
+response = requests.post(url, json=data)
+result = response.json()
+print("Credential created:", result)
+```
+
+## Integration Examples
+
+### Web Application Integration
+
+For web applications, you can integrate ACTA API using standard HTTP requests:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ACTA Integration Example</title>
+</head>
+<body>
+    <button onclick="createCredential()">Create Credential</button>
+    
+    <script>
+    async function createCredential() {
+        try {
+            const response = await fetch('https://acta-api.railway.app/api/credentials', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    recipient: "YOUR_STELLAR_PUBLIC_KEY",
+                    issuer: "YOUR_STELLAR_PUBLIC_KEY",
+                    credentialType: "certificate",
+                    metadata: {
+                        title: "Web App Credential",
+                        description: "Created from web application"
+                    }
+                })
+            });
+            
+            const result = await response.json();
+            console.log('Success:', result);
+            alert('Credential created successfully!');
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to create credential');
+        }
+    }
+    </script>
+</body>
+</html>
+```
+
+### Mobile App Integration
+
+For mobile applications, use your platform's HTTP client:
+
+**React Native:**
+```javascript
+import React from 'react';
+import { Button, Alert } from 'react-native';
+
+const createCredential = async () => {
+  try {
+    const response = await fetch('https://acta-api.railway.app/api/credentials', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        recipient: "YOUR_STELLAR_PUBLIC_KEY",
+        issuer: "YOUR_STELLAR_PUBLIC_KEY",
+        credentialType: "certificate",
+        metadata: {
+          title: "Mobile App Credential",
+          description: "Created from mobile app"
+        }
+      }),
+    });
+    
+    const result = await response.json();
+    Alert.alert('Success', 'Credential created successfully!');
+  } catch (error) {
+    Alert.alert('Error', 'Failed to create credential');
   }
-}
+};
+
+export const CredentialButton = () => (
+  <Button title="Create Credential" onPress={createCredential} />
+);
 ```
 
-**Health endpoint (`/health`)**:
-```json
-{
-  "status": "OK",
-  "timestamp": "2025-01-XX:XX:XX.XXXZ",
-  "service": "Stellar Credential API"
-}
-```
+## Next Steps
 
-## Production Setup
+1. **Explore API Endpoints**: Check the [API Endpoints](./04-endpoints.md) documentation for all available operations
+2. **Review Examples**: See [Examples and Use Cases](./07-examples.md) for more integration patterns
+3. **Security**: Read [Authentication and Security](./03-authentication.md) for production considerations
+4. **Troubleshooting**: Visit [Troubleshooting](./09-troubleshooting.md) if you encounter issues
 
-### 1. Build the Application
+## Need to Run Your Own Instance?
 
-```bash
-# Build the TypeScript code
-npm run build
-
-# Start the production server
-npm start
-```
-
-### 2. Environment Variables for Production
-
-Update your `.env` file for production:
-
-```env
-# Production configuration
-NODE_ENV=production
-STELLAR_NETWORK=mainnet
-PORT=8000
-
-# Use production Stellar account
-STELLAR_SECRET_KEY=your-production-secret-key
-
-# Production security settings
-JWT_SECRET=your-production-jwt-secret
-API_KEY_SECRET=your-production-api-key-secret
-
-# Production CORS settings
-ALLOWED_ORIGINS=https://yourdomain.com,https://app.yourdomain.com
-
-# Production logging
-LOG_LEVEL=warn
-LOG_FORMAT=json
-```
-
-### 3. Process Management
-
-For production deployment, use a process manager like PM2:
-
-```bash
-# Install PM2 globally
-npm install -g pm2
-
-# Start the application with PM2
-pm2 start dist/index.js --name "acta-api"
-
-# Save PM2 configuration
-pm2 save
-
-# Setup PM2 to start on system boot
-pm2 startup
-```
+If you need to run your own instance of ACTA API (for development, customization, or self-hosting), see the [Contributors Guide](./10-contributors.md) for complete setup instructions.
 
 ## Docker Setup
 
