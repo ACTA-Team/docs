@@ -9,7 +9,7 @@ The ACTA API provides RESTful endpoints for managing verifiable credentials on t
 | Environment | URL | Status |
 |-------------|-----|--------|
 | **Development** | `http://localhost:8000` | Active |
-| **Production** | `https://acta.up.railway.app` | Active |
+| **Production** | `https://api.acta.build` | Active |
 
 ---
 
@@ -56,7 +56,7 @@ Returns basic API information and welcome message.
 **Request:**
 
 ```bash
-curl -X GET https://acta.up.railway.app/
+curl -X GET https://api.acta.build/
 ```
 
 **Response:**
@@ -88,7 +88,7 @@ Simple connectivity test endpoint.
 **Request:**
 
 ```bash
-curl -X GET https://acta.up.railway.app/ping
+curl -X GET https://api.acta.build/ping
 ```
 
 **Response:**
@@ -118,7 +118,7 @@ Comprehensive health check including Stellar network connectivity.
 **Request:**
 
 ```bash
-curl -X GET https://acta.up.railway.app/health
+curl -X GET https://api.acta.build/health
 ```
 
 **Response:**
@@ -158,7 +158,7 @@ Creates a new verifiable credential on the Stellar blockchain.
 **Request:**
 
 ```bash
-curl -X POST https://acta.up.railway.app/credentials \
+curl -X POST https://api.acta.build/credentials \
   -H "Content-Type: application/json" \
   -d '{
     "data": {
@@ -223,7 +223,7 @@ Retrieves a credential by its Stellar contract ID.
 **Request:**
 
 ```bash
-curl -X GET https://acta.up.railway.app/credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+curl -X GET https://api.acta.build/credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
 **Path Parameters:**
@@ -264,7 +264,7 @@ Updates the status of an existing credential.
 **Request:**
 
 ```bash
-curl -X PATCH https://acta.up.railway.app/credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/status \
+curl -X PATCH https://api.acta.build/credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/status \
   -H "Content-Type: application/json" \
   -d '{"status": "Revoked"}'
 ```
@@ -308,7 +308,7 @@ Retrieves a credential by its data hash.
 **Request:**
 
 ```bash
-curl -X GET https://acta.up.railway.app/credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
+curl -X GET https://api.acta.build/credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
 ```
 
 **Path Parameters:**
@@ -374,7 +374,7 @@ GET /credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef
 
 **Example cURL:**
 ```bash
-curl -X POST https://acta.up.railway.app/credentials \
+curl -X POST https://api.acta.build/credentials \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
@@ -427,7 +427,7 @@ GET /credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ
 
 **Example cURL:**
 ```bash
-curl -X GET https://acta.up.railway.app/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ \
+curl -X GET https://api.acta.build/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -480,7 +480,7 @@ Content-Type: application/json
 
 **Example cURL:**
 ```bash
-curl -X PATCH https://acta.up.railway.app/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status \
+curl -X PATCH https://api.acta.build/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{"status": "revoked", "reason": "Credential no longer valid"}'
@@ -526,7 +526,7 @@ GET /credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef
 
 **Example cURL:**
 ```bash
-curl -X GET https://acta.up.railway.app/credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456 \
+curl -X GET https://api.acta.build/credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456 \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 

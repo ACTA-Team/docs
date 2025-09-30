@@ -37,7 +37,7 @@ Create a Stellar account for credential operations:
 The ACTA API is already deployed and ready to use:
 ```javascript
 // Create a credential
-const response = await fetch('https://acta-api.railway.app/api/credentials', {
+const response = await fetch('https://api.acta.build/credentials', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -60,7 +60,7 @@ console.log('Credential created:', result);
 ### **Third Step: Verify and Retrieve**
 ```javascript
 // Get credential by ID
-const credential = await fetch(`https://acta-api.railway.app/api/credentials/${credentialId}`);
+const credential = await fetch(`https://api.acta.build/credentials/${credentialId}`);
 const credentialData = await credential.json();
 ```
 
@@ -73,7 +73,7 @@ If you want to contribute to ACTA or run your own instance, see the [Setup and I
 ### **Test the API**
 ```bash
 # Health check
-curl https://acta.up.railway.app/health
+curl https://api.acta.build/health
 
 # Or locally
 curl http://localhost:8000/health

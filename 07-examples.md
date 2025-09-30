@@ -26,7 +26,7 @@ const credentialData = {
   }
 };
 
-const response = await fetch('https://acta-api.railway.app/api/credentials', {
+const response = await fetch('https://api.acta.build/credentials', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -61,7 +61,7 @@ Get credential details by ID:
 // GET /api/credentials/:id
 const credentialId = "cred_abc123def456";
 
-const response = await fetch(`https://acta-api.railway.app/api/credentials/${credentialId}`);
+const response = await fetch(`https://api.acta.build/credentials/${credentialId}`);
 const credential = await response.json();
 
 console.log('Credential details:', credential);
@@ -163,7 +163,7 @@ class CertificationManager {
 }
 
 // Usage example
-const certManager = new CertificationManager('https://acta-api.railway.app');
+const certManager = new CertificationManager('https://api.acta.build');
 
 // Issue AWS Solutions Architect certification
 const awsCertification = await certManager.issueCertification({
@@ -293,7 +293,7 @@ class TranscriptManager {
 }
 
 // Usage example
-const transcriptManager = new TranscriptManager('https://acta-api.railway.app');
+const transcriptManager = new TranscriptManager('https://api.acta.build');
 
 const studentData = {
   stellarId: "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -357,7 +357,7 @@ const CredentialManager = () => {
     metadata: {}
   });
 
-  const API_BASE_URL = 'https://acta-api.railway.app/api';
+  const API_BASE_URL = 'https://api.acta.build';
 
   // Fetch all credentials
   const fetchCredentials = async () => {
@@ -585,7 +585,7 @@ class ACTAIntegration {
 
 // Usage in Express app
 const app = express();
-const acta = new ACTAIntegration('https://acta-api.railway.app/api');
+const acta = new ACTAIntegration('https://api.acta.build');
 
 app.use(express.json());
 
@@ -714,7 +714,7 @@ class UniversityCredentialSystem {
 
 // Usage
 const university = new UniversityCredentialSystem(
-  'https://acta-api.railway.app/api',
+  'https://api.acta.build',
   'GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 );
 
@@ -867,7 +867,7 @@ class ProfessionalLicenseManager {
 
 // Usage
 const licenseManager = new ProfessionalLicenseManager(
-  'https://acta-api.railway.app/api',
+  'https://api.acta.build',
   'GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 );
 
@@ -957,7 +957,7 @@ class ACTAError extends Error {
 async function createCredentialWithErrorHandling(credentialData) {
   try {
     const result = await ACTAErrorHandler.handleAPICall(async () => {
-      return fetch('https://acta-api.railway.app/api/credentials', {
+      return fetch('https://api.acta.build/credentials', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentialData)
@@ -1035,7 +1035,7 @@ class BatchCredentialManager {
 }
 
 // Usage
-const batchManager = new BatchCredentialManager('https://acta-api.railway.app/api');
+const batchManager = new BatchCredentialManager('https://api.acta.build');
 
 const credentialsToCreate = [
   {

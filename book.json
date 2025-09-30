@@ -52,7 +52,7 @@
   },
   "variables": {
     "version": "1.0.0",
-    "api_base_url": "https://acta.up.railway.app/v1",
+    "api_base_url": "https://api.acta.build",
     "stellar_network": "testnet"
   },
   "links": {

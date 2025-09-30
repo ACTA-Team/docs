@@ -4,7 +4,7 @@
 
 The ACTA API is a hosted service that you can integrate directly into your applications. No installation required!
 
-**Base URL:** `https://acta-api.railway.app`
+**Base URL:** `https://api.acta.build`
 
 ## Prerequisites
 
@@ -46,7 +46,7 @@ Verify the API is accessible:
 
 ```bash
 # Test API connectivity
-curl https://acta-api.railway.app/health
+curl https://api.acta.build/health
 
 # Expected response:
 # {
@@ -62,7 +62,7 @@ Create your first credential:
 
 ```bash
 # Using curl
-curl -X POST https://acta-api.railway.app/api/credentials \
+curl -X POST https://api.acta.build/credentials \
   -H "Content-Type: application/json" \
   -d '{
     "recipient": "YOUR_STELLAR_PUBLIC_KEY",
@@ -77,7 +77,7 @@ curl -X POST https://acta-api.railway.app/api/credentials \
 
 **Using JavaScript/Node.js:**
 ```javascript
-const response = await fetch('https://acta-api.railway.app/api/credentials', {
+const response = await fetch('https://api.acta.build/credentials', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -101,7 +101,7 @@ console.log('Credential created:', result);
 ```python
 import requests
 
-url = "https://acta-api.railway.app/api/credentials"
+url = "https://api.acta.build/credentials"
 data = {
     "recipient": "YOUR_STELLAR_PUBLIC_KEY",
     "issuer": "YOUR_STELLAR_PUBLIC_KEY",
@@ -135,7 +135,7 @@ For web applications, you can integrate ACTA API using standard HTTP requests:
     <script>
     async function createCredential() {
         try {
-            const response = await fetch('https://acta-api.railway.app/api/credentials', {
+            const response = await fetch('https://api.acta.build/credentials', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -175,7 +175,7 @@ import { Button, Alert } from 'react-native';
 
 const createCredential = async () => {
   try {
-    const response = await fetch('https://acta-api.railway.app/api/credentials', {
+    const response = await fetch('https://api.acta.build/credentials', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
