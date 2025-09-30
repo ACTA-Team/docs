@@ -27,7 +27,7 @@ The API implements comprehensive Cross-Origin Resource Sharing (CORS) protection
 export const corsMiddleware = (req: Request, res: Response, next: NextFunction) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-API-Key');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-ACTA-Key');
   res.header('Access-Control-Max-Age', '86400');
 
   if (req.method === 'OPTIONS') {

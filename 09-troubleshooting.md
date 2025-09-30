@@ -423,7 +423,7 @@ function validateApiKey(apiKey) {
 
 // Check API key in request headers
 app.use('/api', (req, res, next) => {
-  const apiKey = req.headers['x-api-key'] || req.headers['authorization']?.replace('Bearer ', '');
+  const apiKey = req.headers['x-acta-key'] || req.headers['authorization']?.replace('Bearer ', '');
   
   if (!validateApiKey(apiKey)) {
     return res.status(401).json({ error: 'Invalid API key format' });
@@ -901,7 +901,7 @@ curl -X GET http://localhost:3000/health
 # Test specific endpoint
 curl -X POST http://localhost:3000/api/credentials \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: your-api-key" \
+  -H "X-ACTA-Key: your-api-key" \
   -d '{"data": "test"}'
 
 # Monitor real-time logs
