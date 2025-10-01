@@ -214,55 +214,6 @@ export const CredentialButton = () => (
 
 If you need to run your own instance of ACTA API (for development, customization, or self-hosting), see the [Contributors Guide](./10-contributors.md) for complete setup instructions.
 
-## Docker Setup
-
-### 1. Using Docker Compose
-
-Create a `docker-compose.yml` file:
-
-```yaml
-version: '3.8'
-
-services:
-  acta-api:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - STELLAR_NETWORK=testnet
-      - STELLAR_SECRET_KEY=${STELLAR_SECRET_KEY}
-      - PORT=3000
-    volumes:
-      - ./contracts:/app/contracts
-    restart: unless-stopped
-
-  # Optional: Add a reverse proxy
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    depends_on:
-      - acta-api
-    restart: unless-stopped
-```
-
-### 2. Build and Run
-
-```bash
-# Build and start the containers
-docker-compose up -d
-
-# View logs
-docker-compose logs -f acta-api
-
-# Stop the containers
-docker-compose down
-```
-
 ## Troubleshooting
 
 ### Common Issues

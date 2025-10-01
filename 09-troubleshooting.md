@@ -678,64 +678,6 @@ async function safeOperation(operation) {
 
 ## **Production Deployment Issues**
 
-### **Docker Problems**
-
-#### **Container Build Failures**
-
-**Problem**: Docker build fails with various errors.
-
-```bash
-Error: failed to solve: process "/bin/sh -c npm install" did not complete successfully
-```
-
-**Solutions**:
-```dockerfile
-# Use multi-stage build to reduce image size
-FROM node:18-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-
-FROM node:18-alpine AS production
-WORKDIR /app
-COPY --from=builder /app/node_modules ./node_modules
-COPY . .
-
-# Add proper health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node healthcheck.js || exit 1
-```
-
-#### **Container Runtime Issues**
-
-**Problem**: Container starts but application fails.
-
-**Diagnosis**:
-```bash
-# Check container logs
-docker logs container-name
-
-# Inspect container
-docker exec -it container-name sh
-
-# Check environment variables
-docker exec container-name env
-```
-
-**Solutions**:
-```dockerfile
-# Add proper signal handling
-FROM node:18-alpine
-RUN apk add --no-cache dumb-init
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "server.js"]
-
-# Use non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodejs -u 1001
-USER nodejs
-```
-
 ### **Load Balancer Issues**
 
 #### **Health Check Failures**

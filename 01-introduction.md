@@ -112,7 +112,6 @@ graph LR
 ### Security & DevOps
 - **Helmet.js**: Security headers middleware
 - **CORS**: Cross-origin resource sharing
-- **Docker**: Containerization platform
 - **ESLint & Prettier**: Code quality tools
 
 ## API Design Principles

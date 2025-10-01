@@ -230,38 +230,6 @@ heroku config:set STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
 heroku config:set NODE_ENV=production
 ```
 
-### **Docker**
-
-Use environment variables in your Docker configuration:
-
-```dockerfile
-# Dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-
-COPY . .
-
-EXPOSE 8000
-CMD ["npm", "start"]
-```
-
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  acta-api:
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      - STELLAR_SECRET_KEY=${STELLAR_SECRET_KEY}
-      - STELLAR_HORIZON_URL=${STELLAR_HORIZON_URL}
-      - NODE_ENV=production
-```
-
 ### **Kubernetes**
 
 Use ConfigMaps and Secrets for configuration:
