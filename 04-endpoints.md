@@ -13,6 +13,33 @@ The ACTA API provides RESTful endpoints for managing verifiable credentials on t
 
 ---
 
+## Authentication
+
+All credential management endpoints require authentication using API keys. Before making requests to these endpoints, you must:
+
+1. **Obtain an API Key**: Visit [apikeys.acta.build](https://apikeys.acta.build) to generate your API key
+2. **Include in Headers**: Add your API key to the `X-ACTA-Key` header in all requests
+
+### **Getting Your API Key**
+
+To get started with the ACTA API:
+
+1. Navigate to **[apikeys.acta.build](https://apikeys.acta.build)**
+2. Authenticate using your device's passkey (biometric authentication)
+3. Create a new API key with a descriptive name
+4. Copy and securely store your API key
+5. Use the key in the `X-ACTA-Key` header for all credential operations
+
+**Example Authentication Header:**
+```bash
+curl -X POST https://api.acta.build/credentials \
+  -H "Content-Type: application/json" \
+  -H "X-ACTA-Key: your_api_key_here" \
+  -d '{"data": {...}}'
+```
+
+---
+
 ## Response Format
 
 All API responses follow a consistent JSON structure for both success and error cases.
@@ -160,6 +187,7 @@ Creates a new verifiable credential on the Stellar blockchain.
 ```bash
 curl -X POST https://api.acta.build/credentials \
   -H "Content-Type: application/json" \
+  -H "X-ACTA-Key: your_api_key_here" \
   -d '{
     "data": {
       "type": "UniversityDegree",
@@ -266,6 +294,7 @@ Updates the status of an existing credential.
 ```bash
 curl -X PATCH https://api.acta.build/credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/status \
   -H "Content-Type: application/json" \
+  -H "X-ACTA-Key: your_api_key_here" \
   -d '{"status": "Revoked"}'
 ```
 
@@ -376,7 +405,7 @@ GET /credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef
 ```bash
 curl -X POST https://api.acta.build/credentials \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "X-ACTA-Key: your_api_key_here" \
   -d '{
     "issuer": "GCKFBEIYTKP6RCZX6LROC7CWLZQYLKJ4KQPQKJLPQJLPQJLPQJLPQJLP",
     "subject": "GDQNYC2PDNPQN2VDMNCQJLPQJLPQJLPQJLPQJLPQJLPQJLPQJLPQJLP",
@@ -482,7 +511,7 @@ Content-Type: application/json
 ```bash
 curl -X PATCH https://api.acta.build/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "X-ACTA-Key: your_api_key_here" \
   -d '{"status": "revoked", "reason": "Credential no longer valid"}'
 ```
 
@@ -606,6 +635,7 @@ RateLimit-Reset: 1642694400
 ```bash
 curl -X POST http://localhost:8000/credentials \
   -H "Content-Type: application/json" \
+  -H "X-ACTA-Key: your_api_key_here" \
   -d '{
     "data": {
       "holder": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -648,6 +678,7 @@ curl -X GET http://localhost:8000/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNV
 ```bash
 curl -X PATCH http://localhost:8000/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status \
   -H "Content-Type: application/json" \
+  -H "X-ACTA-Key: your_api_key_here" \
   -d '{"status": "Suspended"}'
 ```
 

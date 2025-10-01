@@ -114,6 +114,113 @@ export const securityHeaders = (req: Request, res: Response, next: NextFunction)
 | `Referrer-Policy` | Controls referrer information | `strict-origin-when-cross-origin` |
 | `Content-Security-Policy` | Prevents code injection | `default-src 'self'` |
 
+## API Key Authentication
+
+The ACTA API uses API keys for authenticating requests to credential management endpoints. API keys provide secure, programmatic access to the API without requiring user authentication for each request.
+
+### **Obtaining an API Key**
+
+To create and manage API keys, visit **[apikeys.acta.build](https://apikeys.acta.build)**:
+
+1. **Access the API Key Manager**: Navigate to [apikeys.acta.build](https://apikeys.acta.build)
+2. **Authenticate with Passkey**: Use your device's biometric authentication (fingerprint, face recognition, or PIN)
+3. **Create API Key**: Click "Create New API Key" and provide a descriptive name
+4. **Copy and Store**: Securely copy and store your API key - it will only be shown once
+5. **Use in Requests**: Include the API key in the `X-ACTA-Key` header for all credential operations
+
+### **API Key Usage**
+
+Include your API key in the request headers for all credential-related operations:
+
+```bash
+# Creating a credential
+curl -X POST https://api.acta.build/credentials \
+  -H "Content-Type: application/json" \
+  -H "X-ACTA-Key: your_api_key_here" \
+  -d '{
+    "data": {
+      "type": "UniversityDegree",
+      "credentialSubject": {
+        "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
+        "degree": {
+          "type": "BachelorDegree",
+          "name": "Bachelor of Science"
+        }
+      }
+    }
+  }'
+
+# Updating credential status
+curl -X PATCH https://api.acta.build/credentials/CONTRACT_ID/status \
+  -H "Content-Type: application/json" \
+  -H "X-ACTA-Key: your_api_key_here" \
+  -d '{"status": "Revoked"}'
+```
+
+### **Endpoints Requiring API Keys**
+
+The following endpoints require a valid API key in the `X-ACTA-Key` header:
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/credentials` | POST | Create new credential |
+| `/credentials/:id/status` | PATCH | Update credential status |
+| `/verify` | POST | Verify credential authenticity |
+
+### **API Key Security Best Practices**
+
+#### **1. Secure Storage**
+```bash
+# Store in environment variables
+export ACTA_API_KEY="your_api_key_here"
+
+# Use in applications
+curl -H "X-ACTA-Key: $ACTA_API_KEY" https://api.acta.build/credentials
+```
+
+#### **2. Key Management**
+- **Rotate regularly**: Generate new keys periodically
+- **Revoke unused keys**: Remove keys that are no longer needed
+- **Monitor usage**: Track API key usage through the dashboard
+- **Use descriptive names**: Name keys based on their purpose or application
+
+#### **3. Never Expose Keys**
+```javascript
+// ❌ Bad: Never hardcode API keys
+const apiKey = "acta_key_1234567890abcdef";
+
+// ✅ Good: Use environment variables
+const apiKey = process.env.ACTA_API_KEY;
+
+// ❌ Bad: Never commit keys to version control
+// ✅ Good: Use .env files and add them to .gitignore
+```
+
+### **Rate Limiting with API Keys**
+
+API keys are subject to rate limiting to ensure fair usage:
+
+- **Credential creation**: 10 credentials per hour per API key
+- **Status updates**: 50 updates per hour per API key
+- **Verification requests**: 100 verifications per hour per API key
+
+Rate limit headers are included in responses:
+```http
+X-RateLimit-Limit: 10
+X-RateLimit-Remaining: 8
+X-RateLimit-Reset: 1642694400
+```
+
+### **API Key Management Dashboard**
+
+The [apikeys.acta.build](https://apikeys.acta.build) dashboard provides:
+
+- **Key Creation**: Generate new API keys with custom names
+- **Key Listing**: View all your active API keys
+- **Usage Monitoring**: Track requests made with each key
+- **Key Revocation**: Instantly revoke compromised or unused keys
+- **Security Features**: Passkey authentication for secure access
+
 ## Stellar Key Authentication
 
 The API uses Stellar cryptographic keys for authentication and authorization.
