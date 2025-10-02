@@ -61,7 +61,7 @@ curl https://api.acta.build/health
 Create your first credential:
 
 ```bash
-# Using curl (requires API key from apikeys.acta.build)
+# Using curl (requires API key from keys.acta.build)
 curl -X POST https://api.acta.build/credentials \
   -H "Content-Type: application/json" \
   -H "X-ACTA-Key: your_api_key_here" \

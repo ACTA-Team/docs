@@ -17,14 +17,14 @@ The ACTA API provides RESTful endpoints for managing verifiable credentials on t
 
 All credential management endpoints require authentication using API keys. Before making requests to these endpoints, you must:
 
-1. **Obtain an API Key**: Visit [apikeys.acta.build](https://apikeys.acta.build) to generate your API key
+1. **Obtain an API Key**: Visit [keys.acta.build](https://keys.acta.build) to generate your API key
 2. **Include in Headers**: Add your API key to the `X-ACTA-Key` header in all requests
 
 ### **Getting Your API Key**
 
 To get started with the ACTA API:
 
-1. Navigate to **[apikeys.acta.build](https://apikeys.acta.build)**
+1. Navigate to **[keys.acta.build](https://keys.acta.build)**
 2. Authenticate using your device's passkey (biometric authentication)
 3. Create a new API key with a descriptive name
 4. Copy and securely store your API key

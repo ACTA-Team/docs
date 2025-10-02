@@ -120,9 +120,9 @@ The ACTA API uses API keys for authenticating requests to credential management 
 
 ### **Obtaining an API Key**
 
-To create and manage API keys, visit **[apikeys.acta.build](https://apikeys.acta.build)**:
+To create and manage API keys, visit **[keys.acta.build](https://keys.acta.build)**:
 
-1. **Access the API Key Manager**: Navigate to [apikeys.acta.build](https://apikeys.acta.build)
+1. **Access the API Key Manager**: Navigate to [keys.acta.build](https://keys.acta.build)
 2. **Authenticate with Passkey**: Use your device's biometric authentication (fingerprint, face recognition, or PIN)
 3. **Create API Key**: Click "Create New API Key" and provide a descriptive name
 4. **Copy and Store**: Securely copy and store your API key - it will only be shown once
@@ -213,7 +213,7 @@ X-RateLimit-Reset: 1642694400
 
 ### **API Key Management Dashboard**
 
-The [apikeys.acta.build](https://apikeys.acta.build) dashboard provides:
+The [keys.acta.build](https://keys.acta.build) dashboard provides:
 
 - **Key Creation**: Generate new API keys with custom names
 - **Key Listing**: View all your active API keys
