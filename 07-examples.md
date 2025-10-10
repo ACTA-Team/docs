@@ -10,28 +10,35 @@ This section provides practical examples and real-world use cases for the ACTA A
 
 ### **Creating a Simple Credential**
 
-Create a basic educational credential:
+Create a basic educational credential (W3C VC payload):
 
 ```javascript
-// POST /api/credentials
-const credentialData = {
-  recipient: "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  issuer: "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  credentialType: "diploma",
+// POST /credentials
+const payload = {
+  data: {
+    "@context": [
+      "https://www.w3.org/ns/credentials/v2",
+      "https://www.w3.org/ns/credentials/examples/v2"
+    ],
+    type: ["VerifiableCredential", "UniversityDegreeCredential"],
+    issuer: "did:example:76e12ec712ebc6f1c221ebfeb1f",
+    issuanceDate: "2024-01-15T10:00:00Z",
+    credentialSubject: {
+      id: "did:example:ebfeb1f712ebc6f1c276e12ec21",
+      degree: { type: "BachelorDegree", name: "Bachelor of Computer Science" }
+    }
+  },
   metadata: {
-    institution: "University of Technology",
-    degree: "Bachelor of Computer Science",
-    graduationDate: "2024-05-15",
-    gpa: "3.8"
+    issuer: "University of Technology",
+    subject: "Jane Smith",
+    graduationDate: "2024-05-15"
   }
 };
 
 const response = await fetch('https://api.acta.build/credentials', {
   method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify(credentialData)
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(payload)
 });
 
 const result = await response.json();
@@ -43,25 +50,24 @@ console.log('Credential created:', result);
 {
   "success": true,
   "data": {
-    "id": "cred_abc123def456",
-    "transactionHash": "a1b2c3d4e5f6...",
-    "stellarAccount": "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "credentialHash": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
-    "timestamp": "2024-01-15T10:30:00Z",
-    "status": "confirmed"
+    "contractId": "CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ",
+    "hash": "<sha256 of VC>",
+    "transactionHash": "<tx hash>",
+    "ledgerSequence": 12345678,
+    "createdAt": "2025-01-15T10:30:00.000Z"
   }
 }
 ```
 
 ### **Retrieving a Credential**
 
-Get credential details by ID:
+Get credential details by contract ID:
 
 ```javascript
-// GET /api/credentials/:id
-const credentialId = "cred_abc123def456";
+// GET /credentials/:contractId
+const contractId = "CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ";
 
-const response = await fetch(`https://api.acta.build/credentials/${credentialId}`);
+const response = await fetch(`https://api.acta.build/credentials/${contractId}`);
 const credential = await response.json();
 
 console.log('Credential details:', credential);
@@ -72,22 +78,9 @@ console.log('Credential details:', credential);
 {
   "success": true,
   "data": {
-    "id": "cred_abc123def456",
-    "recipient": "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "issuer": "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "credentialType": "diploma",
-    "metadata": {
-      "institution": "University of Technology",
-      "degree": "Bachelor of Computer Science",
-      "graduationDate": "2024-05-15",
-      "gpa": "3.8"
-    },
-    "transactionHash": "a1b2c3d4e5f6...",
-    "stellarAccount": "GDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "credentialHash": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
-    "timestamp": "2024-01-15T10:30:00Z",
-    "status": "confirmed",
-    "isValid": true
+    "contractId": "CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ",
+    "hash": "<sha256 if present>",
+    "status": "Active"
   }
 }
 ```

@@ -58,20 +58,29 @@ curl https://api.acta.build/health
 
 ### 3. Make Your First API Call
 
-Create your first credential:
+Create your first credential using a W3C Verifiable Credential payload:
 
 ```bash
-# Using curl (requires API key from keys.acta.build)
 curl -X POST https://api.acta.build/credentials \
   -H "Content-Type: application/json" \
-  -H "X-ACTA-Key: your_api_key_here" \
   -d '{
-    "recipient": "YOUR_STELLAR_PUBLIC_KEY",
-    "issuer": "YOUR_STELLAR_PUBLIC_KEY",
-    "credentialType": "certificate",
+    "data": {
+      "@context": [
+        "https://www.w3.org/ns/credentials/v2",
+        "https://www.w3.org/ns/credentials/examples/v2"
+      ],
+      "type": ["VerifiableCredential", "UniversityDegreeCredential"],
+      "issuer": "did:example:76e12ec712ebc6f1c221ebfeb1f",
+      "issuanceDate": "2024-01-15T10:00:00Z",
+      "credentialSubject": {
+        "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
+        "degree": { "type": "BachelorDegree", "name": "Bachelor of Science" }
+      }
+    },
     "metadata": {
-      "title": "My First Credential",
-      "description": "Testing ACTA integration"
+      "issuer": "University of Example",
+      "subject": "John Doe",
+      "expirationDate": "2029-01-15T10:00:00Z"
     }
   }'
 ```
@@ -80,16 +89,25 @@ curl -X POST https://api.acta.build/credentials \
 ```javascript
 const response = await fetch('https://api.acta.build/credentials', {
   method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
+  headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    recipient: "YOUR_STELLAR_PUBLIC_KEY",
-    issuer: "YOUR_STELLAR_PUBLIC_KEY",
-    credentialType: "certificate",
+    data: {
+      "@context": [
+        "https://www.w3.org/ns/credentials/v2",
+        "https://www.w3.org/ns/credentials/examples/v2"
+      ],
+      type: ["VerifiableCredential", "UniversityDegreeCredential"],
+      issuer: "did:example:76e12ec712ebc6f1c221ebfeb1f",
+      issuanceDate: "2024-01-15T10:00:00Z",
+      credentialSubject: {
+        id: "did:example:ebfeb1f712ebc6f1c276e12ec21",
+        degree: { type: "BachelorDegree", name: "Bachelor of Science" }
+      }
+    },
     metadata: {
-      title: "My First Credential",
-      description: "Testing ACTA integration"
+      issuer: "University of Example",
+      subject: "John Doe",
+      expirationDate: "2029-01-15T10:00:00Z"
     }
   })
 });
@@ -104,12 +122,23 @@ import requests
 
 url = "https://api.acta.build/credentials"
 data = {
-    "recipient": "YOUR_STELLAR_PUBLIC_KEY",
-    "issuer": "YOUR_STELLAR_PUBLIC_KEY",
-    "credentialType": "certificate",
+    "data": {
+        "@context": [
+            "https://www.w3.org/ns/credentials/v2",
+            "https://www.w3.org/ns/credentials/examples/v2"
+        ],
+        "type": ["VerifiableCredential", "UniversityDegreeCredential"],
+        "issuer": "did:example:76e12ec712ebc6f1c221ebfeb1f",
+        "issuanceDate": "2024-01-15T10:00:00Z",
+        "credentialSubject": {
+            "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
+            "degree": { "type": "BachelorDegree", "name": "Bachelor of Science" }
+        }
+    },
     "metadata": {
-        "title": "My First Credential",
-        "description": "Testing ACTA integration"
+        "issuer": "University of Example",
+        "subject": "John Doe",
+        "expirationDate": "2029-01-15T10:00:00Z"
     }
 }
 
@@ -142,12 +171,23 @@ For web applications, you can integrate ACTA API using standard HTTP requests:
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    recipient: "YOUR_STELLAR_PUBLIC_KEY",
-                    issuer: "YOUR_STELLAR_PUBLIC_KEY",
-                    credentialType: "certificate",
+                    data: {
+                        "@context": [
+                            "https://www.w3.org/ns/credentials/v2",
+                            "https://www.w3.org/ns/credentials/examples/v2"
+                        ],
+                        type: ["VerifiableCredential", "UniversityDegreeCredential"],
+                        issuer: "did:example:76e12ec712ebc6f1c221ebfeb1f",
+                        issuanceDate: "2024-01-15T10:00:00Z",
+                        credentialSubject: {
+                            id: "did:example:ebfeb1f712ebc6f1c276e12ec21",
+                            degree: { type: "BachelorDegree", name: "Bachelor of Science" }
+                        }
+                    },
                     metadata: {
-                        title: "Web App Credential",
-                        description: "Created from web application"
+                        issuer: "University of Example",
+                        subject: "John Doe",
+                        expirationDate: "2029-01-15T10:00:00Z"
                     }
                 })
             });

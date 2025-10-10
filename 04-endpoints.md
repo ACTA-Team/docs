@@ -15,26 +15,12 @@ The ACTA API provides RESTful endpoints for managing verifiable credentials on t
 
 ## Authentication
 
-All credential management endpoints require authentication using API keys. Before making requests to these endpoints, you must:
+API keys are supported but not required. If you use keys.acta.build, you may include `X-ACTA-Key` for tracking, but the current API endpoints do not enforce API key authentication.
 
-1. **Obtain an API Key**: Visit [keys.acta.build](https://keys.acta.build) to generate your API key
-2. **Include in Headers**: Add your API key to the `X-ACTA-Key` header in all requests
-
-### **Getting Your API Key**
-
-To get started with the ACTA API:
-
-1. Navigate to **[keys.acta.build](https://keys.acta.build)**
-2. Authenticate using your device's passkey (biometric authentication)
-3. Create a new API key with a descriptive name
-4. Copy and securely store your API key
-5. Use the key in the `X-ACTA-Key` header for all credential operations
-
-**Example Authentication Header:**
+**Example Request:**
 ```bash
 curl -X POST https://api.acta.build/credentials \
   -H "Content-Type: application/json" \
-  -H "X-ACTA-Key: your_api_key_here" \
   -d '{"data": {...}}'
 ```
 
@@ -176,30 +162,30 @@ All credential-related operations for creating, retrieving, and managing verifia
 
 ### `POST /credentials`
 
-Creates a new verifiable credential on the Stellar blockchain.
+Creates a new Verifiable Credential (VC) on the Stellar blockchain.
 
 **Endpoint:** `POST /credentials`
 
-**Description:** Creates a new credential by storing its hash on the Stellar blockchain using Soroban smart contracts.
+**Description:** Anchors the VC `sha256` on-chain using Soroban contracts (`issuance.issue`).
 
 **Request:**
 
 ```bash
 curl -X POST https://api.acta.build/credentials \
   -H "Content-Type: application/json" \
-  -H "X-ACTA-Key: your_api_key_here" \
   -d '{
     "data": {
-      "type": "UniversityDegree",
+      "@context": [
+        "https://www.w3.org/ns/credentials/v2",
+        "https://www.w3.org/ns/credentials/examples/v2"
+      ],
+      "type": ["VerifiableCredential", "UniversityDegreeCredential"],
+      "issuer": "did:example:76e12ec712ebc6f1c221ebfeb1f",
+      "issuanceDate": "2024-01-15T10:00:00Z",
       "credentialSubject": {
         "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
-        "degree": {
-          "type": "BachelorDegree",
-          "name": "Bachelor of Science and Arts"
-        }
-      },
-      "issuer": "did:example:76e12ec712ebc6f1c221ebfeb1f",
-      "issuanceDate": "2024-01-15T10:00:00Z"
+        "degree": { "type": "BachelorDegree", "name": "Bachelor of Science" }
+      }
     },
     "metadata": {
       "issuer": "University of Example",
@@ -226,10 +212,11 @@ curl -X POST https://api.acta.build/credentials \
   "success": true,
   "data": {
     "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "hash": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
-    "transactionId": "1234567890abcdef1234567890abcdef12345678"
-  },
-  "message": "Credential created successfully"
+    "hash": "<sha256 of VC>",
+    "transactionHash": "<tx hash>",
+    "ledgerSequence": 123456,
+    "createdAt": "2025-01-10T12:00:00Z"
+  }
 }
 ```
 
@@ -246,7 +233,7 @@ Retrieves a credential by its Stellar contract ID.
 
 **Endpoint:** `GET /credentials/:contractId`
 
-**Description:** Fetches credential data from the Stellar blockchain using the contract ID.
+**Description:** Returns on-chain status via `issuance.verify` and the hash if present in account `manageData`.
 
 **Request:**
 
@@ -267,9 +254,8 @@ curl -X GET https://api.acta.build/credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   "success": true,
   "data": {
     "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "hash": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
-    "status": "Active",
-    "createdAt": "2024-01-15T10:00:00Z"
+    "hash": "<sha256 if present>",
+    "status": "Active"
   }
 }
 ```
@@ -294,7 +280,6 @@ Updates the status of an existing credential.
 ```bash
 curl -X PATCH https://api.acta.build/credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/status \
   -H "Content-Type: application/json" \
-  -H "X-ACTA-Key: your_api_key_here" \
   -d '{"status": "Revoked"}'
 ```
 
@@ -308,15 +293,7 @@ curl -X PATCH https://api.acta.build/credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 **Response:**
 
 ```json
-{
-  "success": true,
-  "data": {
-    "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "status": "Revoked",
-    "updatedAt": "2024-01-15T11:00:00Z"
-  },
-  "message": "Credential status updated successfully"
-}
+{ "success": true, "message": "Credential status updated successfully" }
 ```
 
 **Status Codes:**
@@ -328,96 +305,7 @@ curl -X PATCH https://api.acta.build/credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 ### `GET /credentials/hash/:hash`
 
-Retrieves a credential by its data hash.
-
-**Endpoint:** `GET /credentials/hash/:hash`
-
-**Description:** Fetches credential information using the SHA-256 hash of the credential data.
-
-**Request:**
-
-```bash
-curl -X GET https://api.acta.build/credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
-```
-
-**Path Parameters:**
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `hash` | String | Yes | 64-character hexadecimal hash of credential data |
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "contractId": "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "hash": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
-    "status": "Active",
-    "createdAt": "2024-01-15T10:00:00Z",
-    "verification": {
-      "valid": true,
-      "verified": true,
-      "message": "Credential is valid and verified on blockchain"
-    }
-  }
-}
-```
-
-**Status Codes:**
-- `200 OK`: Credential found
-- `400 Bad Request`: Invalid hash format
-- `404 Not Found`: Credential not found
-- `500 Internal Server Error`: Failed to get credential
-
-**Request:**
-```http
-GET /credentials/hash/a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
-```
-
-**Path Parameters:**
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `hash` | String | Yes | SHA-256 hash of the credential data (64 hex characters) |
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "contractId": "CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ",
-    "hash": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
-    "transactionHash": "7f8e9d0c1b2a3456789012345678901234567890abcdef1234567890abcdef12",
-    "ledgerSequence": 12345678,
-    "createdAt": "2025-01-15T10:30:00.000Z"
-  }
-}
-```
-
-**Status Codes:**
-- `201 Created`: Credential created successfully
-- `400 Bad Request`: Invalid request data
-- `500 Internal Server Error`: Server error
-
-**Example cURL:**
-```bash
-curl -X POST https://api.acta.build/credentials \
-  -H "Content-Type: application/json" \
-  -H "X-ACTA-Key: your_api_key_here" \
-  -d '{
-    "issuer": "GCKFBEIYTKP6RCZX6LROC7CWLZQYLKJ4KQPQKJLPQJLPQJLPQJLPQJLP",
-    "subject": "GDQNYC2PDNPQN2VDMNCQJLPQJLPQJLPQJLPQJLPQJLPQJLPQJLPQJLP",
-    "credentialData": {
-      "name": "John Doe",
-      "degree": "Bachelor of Science",
-      "university": "Example University",
-      "graduationDate": "2023-06-15"
-    },
-    "expirationDate": "2024-06-15T00:00:00Z"
-  }'
-```
+Removed. Hash lookup will be reintroduced when `VaultContract` exposes getters for on-chain reading.
 
 ---
 
@@ -456,8 +344,7 @@ GET /credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ
 
 **Example cURL:**
 ```bash
-curl -X GET https://api.acta.build/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ \
-  -H "Authorization: Bearer YOUR_API_KEY"
+curl -X GET https://api.acta.build/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ
 ```
 
 ---
@@ -511,8 +398,7 @@ Content-Type: application/json
 ```bash
 curl -X PATCH https://api.acta.build/credentials/CA2I6BAXNG7EHS4DF3JFXOQK3LSN6JULNVJ3GMHWTQAXI5WWP2VAEUIQ/status \
   -H "Content-Type: application/json" \
-  -H "X-ACTA-Key: your_api_key_here" \
-  -d '{"status": "revoked", "reason": "Credential no longer valid"}'
+  -d '{"status": "Revoked"}'
 ```
 
 ---

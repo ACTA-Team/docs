@@ -114,9 +114,9 @@ export const securityHeaders = (req: Request, res: Response, next: NextFunction)
 | `Referrer-Policy` | Controls referrer information | `strict-origin-when-cross-origin` |
 | `Content-Security-Policy` | Prevents code injection | `default-src 'self'` |
 
-## API Key Authentication
+## API Keys (Optional)
 
-The ACTA API uses API keys for authenticating requests to credential management endpoints. API keys provide secure, programmatic access to the API without requiring user authentication for each request.
+API keys may be used for tracking and analytics, but they are not required to access current credential endpoints. Requests without `X-ACTA-Key` are accepted.
 
 ### **Obtaining an API Key**
 
@@ -126,46 +126,46 @@ To create and manage API keys, visit **[keys.acta.build](https://keys.acta.build
 2. **Authenticate with Passkey**: Use your device's biometric authentication (fingerprint, face recognition, or PIN)
 3. **Create API Key**: Click "Create New API Key" and provide a descriptive name
 4. **Copy and Store**: Securely copy and store your API key - it will only be shown once
-5. **Use in Requests**: Include the API key in the `X-ACTA-Key` header for all credential operations
+5. **Use in Requests (Optional)**: You can include the API key in the `X-ACTA-Key` header for credential operations if you want attribution
 
-### **API Key Usage**
+### **API Key Usage (Optional)**
 
-Include your API key in the request headers for all credential-related operations:
+If you choose to use an API key, include it in the request headers. Otherwise, you can omit it entirely.
 
 ```bash
 # Creating a credential
 curl -X POST https://api.acta.build/credentials \
   -H "Content-Type: application/json" \
-  -H "X-ACTA-Key: your_api_key_here" \
   -d '{
     "data": {
-      "type": "UniversityDegree",
+      "@context": [
+        "https://www.w3.org/ns/credentials/v2",
+        "https://www.w3.org/ns/credentials/examples/v2"
+      ],
+      "type": ["VerifiableCredential", "UniversityDegreeCredential"],
+      "issuer": "did:example:76e12ec712ebc6f1c221ebfeb1f",
+      "issuanceDate": "2024-01-15T10:00:00Z",
       "credentialSubject": {
         "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
-        "degree": {
-          "type": "BachelorDegree",
-          "name": "Bachelor of Science"
-        }
+        "degree": { "type": "BachelorDegree", "name": "Bachelor of Science" }
       }
+    },
+    "metadata": {
+      "issuer": "University of Example",
+      "subject": "John Doe",
+      "expirationDate": "2029-01-15T10:00:00Z"
     }
   }'
 
 # Updating credential status
 curl -X PATCH https://api.acta.build/credentials/CONTRACT_ID/status \
   -H "Content-Type: application/json" \
-  -H "X-ACTA-Key: your_api_key_here" \
   -d '{"status": "Revoked"}'
 ```
 
 ### **Endpoints Requiring API Keys**
 
-The following endpoints require a valid API key in the `X-ACTA-Key` header:
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/credentials` | POST | Create new credential |
-| `/credentials/:id/status` | PATCH | Update credential status |
-| `/verify` | POST | Verify credential authenticity |
+None. All current endpoints are accessible without API keys.
 
 ### **API Key Security Best Practices**
 
@@ -196,20 +196,9 @@ const apiKey = process.env.ACTA_API_KEY;
 // ✅ Good: Use .env files and add them to .gitignore
 ```
 
-### **Rate Limiting with API Keys**
+### **Rate Limiting**
 
-API keys are subject to rate limiting to ensure fair usage:
-
-- **Credential creation**: 10 credentials per hour per API key
-- **Status updates**: 50 updates per hour per API key
-- **Verification requests**: 100 verifications per hour per API key
-
-Rate limit headers are included in responses:
-```http
-X-RateLimit-Limit: 10
-X-RateLimit-Remaining: 8
-X-RateLimit-Reset: 1642694400
-```
+General rate limits may apply to ensure fair usage across the service, independent of API key usage.
 
 ### **API Key Management Dashboard**
 
