@@ -8,114 +8,48 @@ This comprehensive guide covers deploying the ACTA API to various environments, 
 
 ### **Environment Variables**
 
-Configure these essential environment variables for production:
+Use only the environment variables required by the ACTA API and Soroban contracts. Example production configuration:
 
 ```bash
-# Core Configuration
+# Core
 NODE_ENV=production
 PORT=3000
-API_VERSION=v1
 
-# Stellar Network Configuration
+# Stellar network
 STELLAR_NETWORK=mainnet
 STELLAR_HORIZON_URL=https://horizon.stellar.org
-STELLAR_PASSPHRASE="Public Global Stellar Network ; September 2015"
+SOROBAN_RPC_URL=https://mainnet.soroban.network
 
-# Database Configuration
-DATABASE_URL=postgresql://user:password@host:port/database
-REDIS_URL=redis://user:password@host:port
+# Issuer key (keep secret)
+STELLAR_SECRET_KEY=SBXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-# Security
-JWT_SECRET=your-super-secure-jwt-secret-key
-API_KEY_SECRET=your-api-key-encryption-secret
-CORS_ORIGIN=https://yourdomain.com
+# ACTA contracts
+ACTA_ISSUANCE_CONTRACT_ID=CBXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ACTA_VAULT_CONTRACT_ID=CBXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ACTA_DID_CONTRACT_ID=CBXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-# Monitoring & Logging
-LOG_LEVEL=info
-SENTRY_DSN=https://your-sentry-dsn
-DATADOG_API_KEY=your-datadog-api-key
-
-# Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
-
-# SSL/TLS
-SSL_CERT_PATH=/path/to/ssl/cert.pem
-SSL_KEY_PATH=/path/to/ssl/private.key
+# Optional (only if using the deployer contract)
+ACTA_DEPLOYER_CONTRACT_ID=CBXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
-### **Production Configuration File**
+### **Container Environment Setup**
 
-Create a production configuration file:
+Pass the required variables to your container or process manager. Example `docker run`:
 
-```javascript
-// config/production.js
-module.exports = {
-  server: {
-    port: process.env.PORT || 3000,
-    host: '0.0.0.0',
-    ssl: {
-      enabled: true,
-      cert: process.env.SSL_CERT_PATH,
-      key: process.env.SSL_KEY_PATH
-    }
-  },
-  
-  stellar: {
-    network: 'mainnet',
-    horizonUrl: 'https://horizon.stellar.org',
-    passphrase: 'Public Global Stellar Network ; September 2015'
-  },
-  
-  database: {
-    url: process.env.DATABASE_URL,
-    pool: {
-      min: 5,
-      max: 20,
-      idle: 10000,
-      acquire: 30000
-    },
-    logging: false
-  },
-  
-  redis: {
-    url: process.env.REDIS_URL,
-    retryDelayOnFailover: 100,
-    maxRetriesPerRequest: 3
-  },
-  
-  security: {
-    jwtSecret: process.env.JWT_SECRET,
-    apiKeySecret: process.env.API_KEY_SECRET,
-    cors: {
-      origin: process.env.CORS_ORIGIN,
-      credentials: true
-    },
-    helmet: {
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          scriptSrc: ["'self'"],
-          imgSrc: ["'self'", "data:", "https:"]
-        }
-      }
-    }
-  },
-  
-  rateLimit: {
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000,
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
-    standardHeaders: true,
-    legacyHeaders: false
-  },
-  
-  logging: {
-    level: process.env.LOG_LEVEL || 'info',
-    format: 'json',
-    transports: ['console', 'file']
-  }
-};
+```bash
+docker run -d \
+  -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e PORT=3000 \
+  -e STELLAR_NETWORK=mainnet \
+  -e STELLAR_HORIZON_URL=https://horizon.stellar.org \
+  -e SOROBAN_RPC_URL=https://mainnet.soroban.network \
+  -e ACTA_ISSUANCE_CONTRACT_ID=CB... \
+  -e ACTA_VAULT_CONTRACT_ID=CB... \
+  -e ACTA_DID_CONTRACT_ID=CB... \
+  -e ACTA_DEPLOYER_CONTRACT_ID=CB... \
+  -e STELLAR_SECRET_KEY=SB... \
+  your-account.dkr.ecr.region.amazonaws.com/acta-api:latest
 ```
 
 ---
@@ -149,19 +83,18 @@ module.exports = {
         }
       ],
       "environment": [
-        {
-          "name": "NODE_ENV",
-          "value": "production"
-        }
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "STELLAR_NETWORK", "value": "mainnet" },
+        { "name": "STELLAR_HORIZON_URL", "value": "https://horizon.stellar.org" },
+        { "name": "SOROBAN_RPC_URL", "value": "https://mainnet.soroban.network" },
+        { "name": "ACTA_ISSUANCE_CONTRACT_ID", "value": "CB..." },
+        { "name": "ACTA_VAULT_CONTRACT_ID", "value": "CB..." },
+        { "name": "ACTA_DID_CONTRACT_ID", "value": "CB..." }
       ],
       "secrets": [
         {
-          "name": "DATABASE_URL",
-          "valueFrom": "arn:aws:secretsmanager:region:account:secret:acta/database-url"
-        },
-        {
-          "name": "JWT_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:region:account:secret:acta/jwt-secret"
+          "name": "STELLAR_SECRET_KEY",
+          "valueFrom": "arn:aws:secretsmanager:region:account:secret:acta/stellar-secret-key"
         }
       ],
       "logConfiguration": {
@@ -226,36 +159,9 @@ resource "aws_subnet" "acta_public_subnet" {
   }
 }
 
-# RDS Database
-resource "aws_db_instance" "acta_db" {
-  identifier     = "acta-database"
-  engine         = "postgres"
-  engine_version = "15.3"
-  instance_class = "db.t3.micro"
-  
-  allocated_storage     = 20
-  max_allocated_storage = 100
-  storage_type          = "gp2"
-  storage_encrypted     = true
-
-  db_name  = "acta_prod"
-  username = "acta"
-  password = var.db_password
-
-  vpc_security_group_ids = [aws_security_group.rds_sg.id]
-  db_subnet_group_name   = aws_db_subnet_group.acta_db_subnet_group.name
-
-  backup_retention_period = 7
-  backup_window          = "03:00-04:00"
-  maintenance_window     = "sun:04:00-sun:05:00"
-
-  skip_final_snapshot = false
-  final_snapshot_identifier = "acta-db-final-snapshot"
-
-  tags = {
-    Name = "acta-database"
-  }
-}
+## Note: No database required
+# The ACTA API is stateless and uses Stellar Soroban contracts.
+# Remove any RDS/Redis resources; keep networking, ALB, and ECS definitions.
 
 # ECS Cluster
 resource "aws_ecs_cluster" "acta_cluster" {
@@ -313,7 +219,9 @@ steps:
     - 'managed'
     - '--allow-unauthenticated'
     - '--set-env-vars'
-    - 'NODE_ENV=production'
+    - 'NODE_ENV=production,STELLAR_NETWORK=mainnet,STELLAR_HORIZON_URL=https://horizon.stellar.org,SOROBAN_RPC_URL=https://mainnet.soroban.network'
+    - '--set-env-vars'
+    - 'ACTA_ISSUANCE_CONTRACT_ID=CB...,ACTA_VAULT_CONTRACT_ID=CB...,ACTA_DID_CONTRACT_ID=CB...'
     - '--memory'
     - '2Gi'
     - '--cpu'
@@ -356,11 +264,23 @@ spec:
         env:
         - name: NODE_ENV
           value: "production"
-        - name: DATABASE_URL
+        - name: STELLAR_NETWORK
+          value: "mainnet"
+        - name: STELLAR_HORIZON_URL
+          value: "https://horizon.stellar.org"
+        - name: SOROBAN_RPC_URL
+          value: "https://mainnet.soroban.network"
+        - name: ACTA_ISSUANCE_CONTRACT_ID
+          value: "CB..."
+        - name: ACTA_VAULT_CONTRACT_ID
+          value: "CB..."
+        - name: ACTA_DID_CONTRACT_ID
+          value: "CB..."
+        - name: STELLAR_SECRET_KEY
           valueFrom:
             secretKeyRef:
-              name: database-url
-              key: url
+              name: stellar-secret-key
+              key: key
         resources:
           limits:
             cpu: "2"
@@ -403,8 +323,21 @@ properties:
       environmentVariables:
       - name: NODE_ENV
         value: production
-      - name: DATABASE_URL
-        secureValue: postgresql://user:pass@host:5432/db
+      - name: STELLAR_NETWORK
+        value: mainnet
+      - name: STELLAR_HORIZON_URL
+        value: https://horizon.stellar.org
+      - name: SOROBAN_RPC_URL
+        value: https://mainnet.soroban.network
+      - name: ACTA_ISSUANCE_CONTRACT_ID
+        value: CB...
+      - name: ACTA_VAULT_CONTRACT_ID
+        value: CB...
+      - name: ACTA_DID_CONTRACT_ID
+        value: CB...
+      secureEnvironmentVariables:
+      - name: STELLAR_SECRET_KEY
+        secureValue: SB...
   osType: Linux
   restartPolicy: Always
   ipAddress:
@@ -438,11 +371,14 @@ kind: ConfigMap
 metadata:
   name: acta-config
   namespace: acta-production
-data:
+  data:
   NODE_ENV: "production"
   STELLAR_NETWORK: "mainnet"
   STELLAR_HORIZON_URL: "https://horizon.stellar.org"
-  LOG_LEVEL: "info"
+  SOROBAN_RPC_URL: "https://mainnet.soroban.network"
+  ACTA_ISSUANCE_CONTRACT_ID: "CB..."
+  ACTA_VAULT_CONTRACT_ID: "CB..."
+  ACTA_DID_CONTRACT_ID: "CB..."
 
 ---
 # secret.yaml
@@ -453,9 +389,7 @@ metadata:
   namespace: acta-production
 type: Opaque
 data:
-  DATABASE_URL: <base64-encoded-database-url>
-  JWT_SECRET: <base64-encoded-jwt-secret>
-  API_KEY_SECRET: <base64-encoded-api-key-secret>
+  STELLAR_SECRET_KEY: <base64-encoded-stellar-secret-key>
 
 ---
 # deployment.yaml
