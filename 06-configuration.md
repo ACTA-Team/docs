@@ -299,7 +299,7 @@ app.get('/health', async (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
     stellar: {
-      network: process.env.STELLAR_NETWORK_PASSPHRASE?.includes('Test') ? 'testnet' : 'mainnet',
+      network: process.env.STELLAR_NETWORK || 'testnet',
       horizonUrl: process.env.STELLAR_HORIZON_URL
     }
   };
@@ -316,8 +316,9 @@ Log configuration on startup (without sensitive data):
 console.log('Starting ACTA API with configuration:');
 console.log(`- Environment: ${process.env.NODE_ENV}`);
 console.log(`- Port: ${process.env.PORT || 8000}`);
-console.log(`- Stellar Network: ${process.env.STELLAR_NETWORK_PASSPHRASE?.includes('Test') ? 'Testnet' : 'Mainnet'}`);
+console.log(`- Stellar Network: ${process.env.STELLAR_NETWORK || 'testnet'}`);
 console.log(`- Horizon URL: ${process.env.STELLAR_HORIZON_URL}`);
+console.log(`- Soroban RPC: ${process.env.SOROBAN_RPC_URL || process.env.STELLAR_SOROBAN_URL}`);
 ```
 
 ---

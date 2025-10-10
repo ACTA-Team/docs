@@ -56,73 +56,21 @@ All API responses follow a consistent JSON structure for both success and error 
 
 ---
 
-## **Root Endpoints**
+## **Root & Health**
 
 ### `GET /`
 
-Returns basic API information and welcome message.
-
-**Endpoint:** `GET /`
-
-**Description:** Root endpoint that provides API information and status.
-
-**Request:**
-
-```bash
-curl -X GET https://api.acta.build/
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "message": "Welcome to ACTA API",
-    "version": "1.0.0",
-    "description": "Autonomous Credential Trust Architecture API"
-  }
-}
-```
-
-**Status Codes:**
-- `200 OK`: Success
+Serves Swagger UI for interactive documentation. Requests to `/` return the documentation UI (HTML).
 
 ---
 
-### `GET /ping`
-
-Simple connectivity test endpoint.
-
-**Endpoint:** `GET /ping`
-
-**Description:** Health check endpoint for testing API connectivity.
-
-**Request:**
-
-```bash
-curl -X GET https://api.acta.build/ping
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "message": "pong"
-  }
-}
-```
-
-**Status Codes:**
-- `200 OK`: Connection successful
+Removed. The `/ping` endpoint no longer exists.
 
 ---
 
 ### `GET /health`
 
-Comprehensive health check including Stellar network connectivity.
+Service status.
 
 **Endpoint:** `GET /health`
 
@@ -138,15 +86,11 @@ curl -X GET https://api.acta.build/health
 
 ```json
 {
-  "success": true,
-  "data": {
-    "status": "healthy",
-    "timestamp": "2024-01-15T10:30:00.000Z",
-    "stellar": {
-      "network": "testnet",
-      "connected": true
-    }
-  }
+  "status": "OK",
+  "timestamp": "2025-01-10T12:00:00Z",
+  "service": "Stellar Credential API",
+  "port": 8000,
+  "env": { "NODE_ENV": "development", "PORT": "8000" }
 }
 ```
 
@@ -156,7 +100,7 @@ curl -X GET https://api.acta.build/health
 
 ---
 
-## **Credentials Endpoints**
+## **Credentials**
 
 All credential-related operations for creating, retrieving, and managing verifiable credentials.
 
@@ -305,7 +249,7 @@ curl -X PATCH https://api.acta.build/credentials/CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 ### `GET /credentials/hash/:hash`
 
-Removed. Hash lookup will be reintroduced when `VaultContract` exposes getters for on-chain reading.
+Removed. Hash lookup will be reintroduced when `VaultContract` exposes getters.
 
 ---
 
@@ -585,7 +529,7 @@ All examples in this documentation use curl commands that you can run directly i
 ```javascript
 const axios = require('axios');
 
-const API_BASE_URL = 'https://api.acta.network/v1';
+const API_BASE_URL = 'https://api.acta.build';
 
 // Create a credential
 async function createCredential(credentialData) {

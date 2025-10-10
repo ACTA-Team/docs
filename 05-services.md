@@ -12,12 +12,11 @@ The ACTA API is built on a modular service architecture that separates concerns 
 
 | Service | Purpose | Dependencies |
 |---------|---------|--------------|
-| **CredentialService** | Manages credential lifecycle | StellarService, HashService |
-| **StellarService** | Handles blockchain operations | Stellar SDK |
-| **HashService** | Generates and validates hashes | crypto module |
-| **ValidationService** | Validates input data | joi, custom validators |
+| **StellarService** | Blockchain and contract operations (issue, verify, revoke, DID) | Stellar SDK |
 
 ---
+
+> Note: La sección "CredentialService" a continuación describe una arquitectura planeada. La implementación actual gestiona el ciclo de credenciales directamente desde los routers usando `StellarService`.
 
 ## **CredentialService**
 

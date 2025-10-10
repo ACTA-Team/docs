@@ -43,7 +43,7 @@ docker run -d \
   -e PORT=3000 \
   -e STELLAR_NETWORK=mainnet \
   -e STELLAR_HORIZON_URL=https://horizon.stellar.org \
-  -e SOROBAN_RPC_URL=https://mainnet.soroban.network \
+  -e SOROBAN_RPC_URL=https://soroban-mainnet.stellar.org \
   -e ACTA_ISSUANCE_CONTRACT_ID=CB... \
   -e ACTA_VAULT_CONTRACT_ID=CB... \
   -e ACTA_DID_CONTRACT_ID=CB... \
