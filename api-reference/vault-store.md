@@ -1,6 +1,6 @@
 # POST /vault/store
 
-Stores a credential directly in the Vault. The owner signs the transaction; the issuer defaults to ACTA’s public key.
+Stores a credential directly in the Vault. The API signs the transaction (server-signed); the issuer defaults to ACTA’s public key (`API_PUBLIC_KEY`).
 
 - Method: `POST`
 - URL: `https://api.acta.build/vault/store`
@@ -13,7 +13,7 @@ Request body:
   "vaultContractId": "C...VAULT_CONTRACT_ADDRESS...",
   "vcId": "vc:example:123",
   "vcData": "{\"type\":\"Attestation\",\"subject\":\"...\"}",
-  "issuerDid": "did:pkh:<issuer>" ,
+"issuerDid": "did:pkh:<issuer>",
   "issuanceContractId": "<optional-issuance-contract-address>"
 }
 ```

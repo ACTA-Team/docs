@@ -16,7 +16,7 @@ This guide explains how a company can integrate ACTA using only the public API a
 
 1. Prepare your VC JSON payload and choose a `vcId`.
 2. Call `POST /credentials` to issue and store the VC in the Vault.
-3. If you need owner-signed storage only, use `POST /vault/store` instead.
+3. If you need to store without issuing, use `POST /vault/store` instead (server-signed).
 4. Verify when needed via `GET /verify/{vc_id}`.
 
 ## Example Requests
@@ -45,13 +45,13 @@ curl https://api.acta.build/verify/vc:example:123
 - `400 bad_request`: Check the request payload and VC JSON. Fix validation or simulation errors.
 - `5xx`: Retry later or contact support if persistent.
 
-## Optional: Client-signed Workflows
+## Notes
 
-If your security model requires client-side signing, use the prepare/submit endpoints described in the API Reference.
+All transactions are server-signed by the API using its configured issuer key.
 
 ## Security Notes
 
 - Always use HTTPS.
-- Your `STELLAR_SECRET_KEY` stays within your infrastructure (e.g., `.env`, HSM, wallet kit).
+- Your `STELLAR_SECRET_KEY` stays within your infrastructure (e.g., `.env`, HSM).
 - The ACTA API never requests, receives, or stores private keys.
 - Treat transaction hashes (`tx_id`) and credential identifiers (`vc_id`) as sensitive operational data.
