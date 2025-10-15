@@ -52,4 +52,6 @@ If your security model requires client-side signing, use the prepare/submit endp
 ## Security Notes
 
 - Always use HTTPS.
+- Your `STELLAR_SECRET_KEY` stays within your infrastructure (e.g., `.env`, HSM, wallet kit).
+- The ACTA API never requests, receives, or stores private keys.
 - Treat transaction hashes (`tx_id`) and credential identifiers (`vc_id`) as sensitive operational data.

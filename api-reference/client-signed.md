@@ -6,6 +6,10 @@ For workflows where the client signs Soroban transactions, the API provides XDR 
 - `POST /tx/prepare/store` — prepare XDR to store a VC
 - `POST /tx/submit` — submit a signed XDR
 
+Important security note:
+- Your `STELLAR_SECRET_KEY` lives only within your infrastructure (e.g., your `.env`, HSM, or wallet solution).
+- The ACTA API never requests, receives, or stores your private keys.
+
 ## Prepare Issue XDR
 
 Request body:
