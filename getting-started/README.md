@@ -4,7 +4,7 @@ This guide explains the minimum steps to begin using `https://api.acta.build`.
 
 ## Prerequisites
 
-- Vault and DID: Create these at `https://keys.acta.build`.
+- Vault and DID: Create these at `https://demo.acta.build`.
   - Vault: Holds on-chain records for your credentials.
   - DID: Decentralized identifier for the owner, aligned with W3C DID format.
 

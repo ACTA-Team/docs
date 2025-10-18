@@ -11,7 +11,7 @@ The ACTA API is designed to interoperate with W3C specifications relevant to Ver
 ## DIDs
 
 - `didUri` (optional) uses the W3C DID URI format: `did:<method>:<id>`.
-- DIDs created via `https://keys.acta.build` associate the credential owner with a decentralized identity.
+- DIDs created via `https://demo.acta.build` associate the credential owner with a decentralized identity.
 
 ## Verification
 

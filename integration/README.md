@@ -4,7 +4,7 @@ This guide explains how a company can integrate ACTA using only the public API a
 
 ## Prerequisites
 
-- Create your Vault and DID at `https://keys.acta.build`.
+- Create your Vault and DID at `https://demo.acta.build`.
 - Obtain the `owner` G-address and `vaultContractId` for your Vault.
 
 ## Typical Use Cases
@@ -22,6 +22,7 @@ This guide explains how a company can integrate ACTA using only the public API a
 ## Example Requests
 
 Issue:
+
 ```bash
 curl -X POST https://api.acta.build/credentials \
   -H "Content-Type: application/json" \
@@ -35,13 +36,14 @@ curl -X POST https://api.acta.build/credentials \
 ```
 
 Verify:
+
 ```bash
 curl https://api.acta.build/verify/vc:example:123
 ```
 
 ## Handling Errors
 
-- `403 issuer_not_authorized`: The issuer must be authorized in the owner’s Vault. Configure authorization via the Vault UI at `https://keys.acta.build` and retry.
+- `403 issuer_not_authorized`: The issuer must be authorized in the owner’s Vault. Configure authorization via the Vault UI at `https://demo.acta.build` and retry.
 - `400 bad_request`: Check the request payload and VC JSON. Fix validation or simulation errors.
 - `5xx`: Retry later or contact support if persistent.
 
