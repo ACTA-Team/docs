@@ -1,6 +1,6 @@
 # GET /verify/{vc_id}
 
-Verifies the status of a credential via the issuance contract.
+Verifies a credential’s status using the Issuance contract.
 
 - Method: `GET`
 - URL: `https://api.acta.build/verify/{vc_id}`
@@ -15,5 +15,5 @@ Success (200):
 ```
 
 Notes:
-- `status` may be `valid`, `invalid`, or `revoked`.
-- `since` may be `null` or missing if not applicable.
+- `status`: `valid`, `invalid`, or `revoked`.
+- `since`: timestamp when revoked (may be null or absent).

@@ -1,6 +1,6 @@
 # POST /credentials
 
-Issues a credential via the issuance contract and stores it in the Vault.
+Issue a credential via the Issuance contract and store it in the owner’s Vault.
 
 - Method: `POST`
 - URL: `https://api.acta.build/credentials`
@@ -9,10 +9,10 @@ Issues a credential via the issuance contract and stores it in the Vault.
 Request body:
 ```json
 {
-  "owner": "G...OWNER_PUBLIC_KEY...",
-  "vaultContractId": "C...VAULT_CONTRACT_ADDRESS...",
+  "owner": "G...",
+  "vaultContractId": "C...",
   "vcId": "vc:example:123",
-  "vcData": "{\"type\":\"Attestation\",\"subject\":\"...\"}",
+  "vcData": "{\"@context\":[\"https://www.w3.org/2018/credentials/v1\"],\"type\":[\"VerifiableCredential\"],\"credentialSubject\":{...}}",
   "didUri": "did:acta:owner-123"
 }
 ```
@@ -23,6 +23,6 @@ Success (201):
 ```
 
 Errors:
-- 400 `bad_request` — validation or simulation error
-- 403 `issuer_not_authorized` — issuer not authorized in owner’s Vault
-- 500 `issue_error` — internal processing error
+- 400 `bad_request` — validation or simulation error.
+- 403 `issuer_not_authorized` — API issuer is not authorized in the owner’s Vault.
+- 500 `issue_error` — internal error.

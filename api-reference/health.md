@@ -1,6 +1,6 @@
 # GET /health
 
-Returns service health and environment info.
+Returns service status and relevant environment information.
 
 - Method: `GET`
 - URL: `https://api.acta.build/health`
@@ -14,8 +14,8 @@ Response (200):
   "port": 8000,
   "env": {
     "NODE_ENV": "production",
-    "ACTA_ISSUANCE_CONTRACT_ID": "<contract-address>",
-    "API_PUBLIC_KEY": "<G-address>"
+    "ACTA_ISSUANCE_CONTRACT_ID": "C...",
+    "API_PUBLIC_KEY": "G..."
   }
 }
 ```

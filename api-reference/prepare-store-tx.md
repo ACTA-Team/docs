@@ -1,17 +1,19 @@
-# POST /tx/prepare/store (Undocumented in Swagger)
+# POST /tx/prepare/store
 
-Prepares an unsigned XDR for `store_vc` using normal form fields. This endpoint is intended for client-signed flows and is not exposed in Swagger.
+Prepara un XDR sin firmar para `store_vc` usando campos normales. Pensado para flujos cliente‑firmados.
 
-- Method: `POST`
+- Método: `POST`
 - URL: `https://api.acta.build/tx/prepare/store`
 - Content-Type: `application/json`
 
-Request body:
+Cuerpo de solicitud:
 ```json
 {
-  "owner": "G...OWNER_PUBLIC_KEY...",
+  "owner": "G...",
   "vcId": "vc:example:123",
   "didUri": "did:pkh:stellar:testnet:G...",
+  "vaultContractId": "C...", // opcional
+  "issuer": "G...",           // opcional
   "fields": {
     "firstName": "John",
     "lastName": "Doe",
@@ -22,16 +24,16 @@ Request body:
 }
 ```
 
-Response (200):
+Respuesta (200):
 ```json
 { "unsignedXdr": "AAAAAgAAAAA...==" }
 ```
 
-Errors:
-- 400 `owner_required` | `vcId_required` | `didUri_required` — missing required fields
-- 400 `bad_request` — simulation error details
-- 500 `prepare_error` — internal error
+Errores:
+- 400 `owner_required` | `vcId_required` | `didUri_required` — faltan campos requeridos.
+- 400 `bad_request` — detalles de error de simulación.
+- 500 `prepare_error` — error interno.
 
-Usage notes:
-- The server reads `ACTA_VAULT_CONTRACT_ID` from its environment.
-- The client should sign `unsignedXdr` with the connected wallet and then submit it to `POST /vault/store` with `signedXdr`.
+Notas de uso:
+- El servidor usa `ACTA_VAULT_CONTRACT_ID` cuando no se envía `vaultContractId`.
+- Firma `unsignedXdr` con tu wallet y envíalo a `POST /vault/store` como `signedXdr`.

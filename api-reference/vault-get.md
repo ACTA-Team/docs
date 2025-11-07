@@ -1,19 +1,19 @@
 # POST /vault/get_vc
 
-Executes a signed read to fetch a specific VC from the owner’s Vault.
+Ejecuta una lectura firmada para obtener un VC específico del Vault del propietario.
 
 - Method: `POST`
 - URL: `https://api.acta.build/vault/get_vc`
 - Content-Type: `application/json`
 
-Request body:
+Cuerpo de solicitud:
 ```json
 {
   "signedXdr": "AAAAAgAAAAA...=="
 }
 ```
 
-Success (200):
+Éxito (200):
 ```json
 {
   "vc": {
@@ -25,10 +25,10 @@ Success (200):
 }
 ```
 
-Errors:
-- 400 `signed_xdr_required` — missing signed envelope
-- 500 `read_error` — internal processing error
+Errores:
+- 400 `signed_xdr_required` — falta el sobre firmado.
+- 500 `read_error` — error interno.
 
-Usage notes:
-- Use `POST /tx/prepare/get_vc` to obtain `unsignedXdr`, sign with the connected wallet, then POST here with `signedXdr`.
-- This call requires owner signature to satisfy `require_auth` on the Vault contract.
+Notas de uso:
+- Usa `POST /tx/prepare/get_vc` para obtener el `unsignedXdr`, fírmalo con el wallet y envíalo aquí como `signedXdr`.
+- Esta llamada requiere firma del `owner` por `require_auth` en el contrato Vault.
