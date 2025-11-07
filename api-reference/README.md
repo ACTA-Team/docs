@@ -1,6 +1,8 @@
 # API Reference
 
-Base URL: `https://api.acta.build`
+Base URLs:
+- Testnet: `https://api.testnet.acta.build`
+- Mainnet: `https://api.mainnet.acta.build`
 
 Current endpoints:
 - `GET /health` — service status and environment snapshot.

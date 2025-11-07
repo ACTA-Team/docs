@@ -19,9 +19,10 @@ ACTA is a Verifiable Credentials API built on the Stellar network (Soroban) that
 2. The Issuance contract marks status and stores the VC in the owner’s Vault contract.
 3. The app keeps the `vc_id` and can read/verify whenever needed.
 
-## Base URL
+## Base URLs
 
-`https://api.acta.build`
+- Testnet: `https://api.testnet.acta.build`
+- Mainnet: `https://api.mainnet.acta.build`
 
 Before using the API, create the owner’s Vault and DID at `https://demo.acta.build`. The Vault is required for on‑chain storage, and the DID associates ownership per W3C standards.
 
@@ -38,10 +39,6 @@ Before using the API, create the owner’s Vault and DID at `https://demo.acta.b
   - `acta_vault_contract`: per‑owner storage; issuer authorization; reads.
 - TypeScript service: transaction signing, Horizon/Soroban RPC calls, REST exposure.
 - VC status: `valid`, `revoked` (with date), or `invalid`.
-
-## SCF#40 — Abstract (condensed)
-
-ACTA is a Verifiable Credentials API built on Stellar that abstracts blockchain complexity. Each credential is hashed and anchored on‑chain, while metadata and proofs are accessible via our API. This hybrid approach ensures scalability, low cost, and interoperability. The MVP runs on testnet; mainnet deployment follows security and performance reviews. See links below for more.
 
 ## Resources
 

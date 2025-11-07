@@ -3,7 +3,9 @@
 Verifies a credential’s status using data in the owner’s Vault.
 
 - Method: `POST`
-- URL: `https://api.acta.build/vault/verify`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/vault/verify`
+  - Mainnet: `https://api.mainnet.acta.build/vault/verify`
 - Content-Type: `application/json`
 
 Request body:

@@ -3,7 +3,9 @@
 Prepares an unsigned XDR to fetch a specific VC from the Vault.
 
 - Method: `POST`
-- URL: `https://api.acta.build/tx/prepare/get_vc`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/tx/prepare/get_vc`
+  - Mainnet: `https://api.mainnet.acta.build/tx/prepare/get_vc`
 - Content-Type: `application/json`
 
 Request body:

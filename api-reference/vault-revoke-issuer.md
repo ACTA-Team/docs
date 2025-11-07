@@ -3,7 +3,9 @@
 Revokes an authorized issuer in a Vault. Supports two modes:
 
 - Method: `POST`
-- URL: `https://api.acta.build/vault/revoke_issuer`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/vault/revoke_issuer`
+  - Mainnet: `https://api.mainnet.acta.build/vault/revoke_issuer`
 - Content-Type: `application/json`
 
 Mode A — Submit signed XDR:

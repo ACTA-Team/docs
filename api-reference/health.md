@@ -3,7 +3,9 @@
 Returns service status and relevant environment information.
 
 - Method: `GET`
-- URL: `https://api.acta.build/health`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/health`
+  - Mainnet: `https://api.mainnet.acta.build/health`
 
 Response (200):
 ```json

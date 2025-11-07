@@ -3,7 +3,9 @@
 Lists all VC IDs for a Vault without requiring a signed transaction.
 
 - Method: `POST`
-- URL: `https://api.acta.build/vault/list_vc_ids_direct`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/vault/list_vc_ids_direct`
+  - Mainnet: `https://api.mainnet.acta.build/vault/list_vc_ids_direct`
 - Content-Type: `application/json`
 
 Request body:

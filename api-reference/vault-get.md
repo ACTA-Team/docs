@@ -3,7 +3,9 @@
 Ejecuta una lectura firmada para obtener un VC específico del Vault del propietario.
 
 - Method: `POST`
-- URL: `https://api.acta.build/vault/get_vc`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/vault/get_vc`
+  - Mainnet: `https://api.mainnet.acta.build/vault/get_vc`
 - Content-Type: `application/json`
 
 Cuerpo de solicitud:

@@ -3,7 +3,9 @@
 Prepares an unsigned XDR to issue a VC via the Issuance contract. Intended for client‑signed flows.
 
 - Method: `POST`
-- URL: `https://api.acta.build/tx/prepare/issue`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/tx/prepare/issue`
+  - Mainnet: `https://api.mainnet.acta.build/tx/prepare/issue`
 - Content-Type: `application/json`
 
 Request body:

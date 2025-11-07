@@ -3,7 +3,9 @@
 Fetches a specific VC from a Vault without requiring a signed transaction.
 
 - Method: `POST`
-- URL: `https://api.acta.build/vault/get_vc_direct`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/vault/get_vc_direct`
+  - Mainnet: `https://api.mainnet.acta.build/vault/get_vc_direct`
 - Content-Type: `application/json`
 
 Request body:

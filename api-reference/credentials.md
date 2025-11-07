@@ -3,7 +3,9 @@
 Issue a credential via the Issuance contract and store it in the owner’s Vault.
 
 - Method: `POST`
-- URL: `https://api.acta.build/credentials`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/credentials`
+  - Mainnet: `https://api.mainnet.acta.build/credentials`
 - Content-Type: `application/json`
 
 Request body:

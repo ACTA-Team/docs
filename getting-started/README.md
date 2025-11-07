@@ -1,6 +1,9 @@
 # Getting Started
 
-This guide explains the minimum steps to begin using `https://api.acta.build`.
+This guide explains the minimum steps to begin using ACTA’s API.
+Use the appropriate base URL for your environment:
+ - Testnet: `https://api.testnet.acta.build`
+ - Mainnet: `https://api.mainnet.acta.build`
 
 ## Prerequisites
 
@@ -10,7 +13,7 @@ This guide explains the minimum steps to begin using `https://api.acta.build`.
 
 ## Base URL
 
-`https://api.acta.build`
+`https://api.testnet.acta.build` (examples use Testnet; replace with Mainnet as needed)
 
 ## Authentication
 

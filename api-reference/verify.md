@@ -3,7 +3,9 @@
 Verifies a credential’s status using the Issuance contract.
 
 - Method: `GET`
-- URL: `https://api.acta.build/verify/{vc_id}`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/verify/{vc_id}`
+  - Mainnet: `https://api.mainnet.acta.build/verify/{vc_id}`
 
 Success (200):
 ```json

@@ -3,7 +3,9 @@
 Ejecuta una lectura firmada para listar todos los IDs de VC del Vault del propietario.
 
 - Method: `POST`
-- URL: `https://api.acta.build/vault/list_vc_ids`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/vault/list_vc_ids`
+  - Mainnet: `https://api.mainnet.acta.build/vault/list_vc_ids`
 - Content-Type: `application/json`
 
 Cuerpo de solicitud:

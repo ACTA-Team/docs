@@ -3,7 +3,9 @@
 Store a credential directly in the Vault. The API signs the transaction (server‑signed). The default issuer is the API public key (`API_PUBLIC_KEY`).
 
 - Method: `POST`
-- URL: `https://api.acta.build/vault/store`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/vault/store`
+  - Mainnet: `https://api.mainnet.acta.build/vault/store`
 - Content-Type: `application/json`
 
 Request body:

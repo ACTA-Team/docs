@@ -3,7 +3,9 @@
 Returns the active API configuration useful for clients integrating with ACTA.
 
 - Method: `GET`
-- URL: `https://api.acta.build/config`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/config`
+  - Mainnet: `https://api.mainnet.acta.build/config`
 
 Success (200):
 ```json

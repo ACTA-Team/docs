@@ -3,7 +3,9 @@
 Prepares an unsigned XDR to list VC IDs from the Vault.
 
 - Method: `POST`
-- URL: `https://api.acta.build/tx/prepare/list_vc_ids`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/tx/prepare/list_vc_ids`
+  - Mainnet: `https://api.mainnet.acta.build/tx/prepare/list_vc_ids`
 - Content-Type: `application/json`
 
 Request body:

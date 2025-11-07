@@ -1,6 +1,9 @@
 # Integration Guide
 
-This guide explains how a company can integrate ACTA using only the public API at `https://api.acta.build`.
+This guide explains how a company can integrate ACTA using only the public API.
+Use the appropriate base URL for your environment:
+ - Testnet: `https://api.testnet.acta.build`
+ - Mainnet: `https://api.mainnet.acta.build`
 
 ## Prerequisites
 
@@ -24,7 +27,7 @@ This guide explains how a company can integrate ACTA using only the public API a
 Issue:
 
 ```bash
-curl -X POST https://api.acta.build/credentials \
+curl -X POST https://api.testnet.acta.build/credentials \
   -H "Content-Type: application/json" \
   -d '{
     "owner": "G...",
@@ -38,7 +41,9 @@ curl -X POST https://api.acta.build/credentials \
 Verify:
 
 ```bash
-curl https://api.acta.build/verify/vc:example:123
+curl https://api.testnet.acta.build/verify/vc:example:123
+
+Note: Replace `https://api.testnet.acta.build` with `https://api.mainnet.acta.build` when targeting Mainnet.
 ```
 
 ## Handling Errors

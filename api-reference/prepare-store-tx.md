@@ -3,7 +3,9 @@
 Prepara un XDR sin firmar para `store_vc` usando campos normales. Pensado para flujos cliente‑firmados.
 
 - Método: `POST`
-- URL: `https://api.acta.build/tx/prepare/store`
+- URLs:
+  - Testnet: `https://api.testnet.acta.build/tx/prepare/store`
+  - Mainnet: `https://api.mainnet.acta.build/tx/prepare/store`
 - Content-Type: `application/json`
 
 Cuerpo de solicitud:
