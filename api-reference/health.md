@@ -1,23 +1,8 @@
-# GET /health
+# Health
 
-Returns service status and relevant environment information.
+Service health endpoint.
 
-- Method: `GET`
-- URLs:
-  - Testnet: `https://api.testnet.acta.build/health`
-  - Mainnet: `https://api.mainnet.acta.build/health`
+## GET `/health`
 
-Response (200):
-```json
-{
-  "status": "OK",
-  "timestamp": "2025-01-01T00:00:00.000Z",
-  "service": "ACTA API",
-  "port": 8000,
-  "env": {
-    "NODE_ENV": "production",
-    "ACTA_ISSUANCE_CONTRACT_ID": "C...",
-    "API_PUBLIC_KEY": "G..."
-  }
-}
-```
+- Returns: `{ status, timestamp, service, port, env: { NODE_ENV, PORT, ACTA_ISSUANCE_CONTRACT_ID, API_PUBLIC_KEY } }`
+- Sources: `api/testnet/src/controllers/healthController.ts:5-9`, `api/testnet/src/services/health.ts:3-21`
