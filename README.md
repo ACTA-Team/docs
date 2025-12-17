@@ -5,8 +5,9 @@ ACTA is the infrastructure for verifiable credentials on Stellar. Issue, store, 
 ## Navigation
 
 - Welcome
-  - Focus and Current Purpose
-  - ACTA: Context, Purpose, and Architecture (Full Summary)
+  - Introduction
+  - Architecture
+  - Getting Started
   - Links
 - API Reference
   - Developer Quickstart, Health
@@ -29,7 +30,7 @@ ACTA is the infrastructure for verifiable credentials on Stellar. Issue, store, 
 
 ## Getting Started
 
-- API: `docs/api-reference/developer-quickstart.md`
-- SDK: `docs/react-sdk/index.md`
-- Wallet Kit: `docs/developer-guide/wallet-kit-quick-integration.md`
-- Testnet Tokens: `docs/stellar-network/trustlines/testnet-tokens.md`
+- [API Quickstart](api-reference/developer-quickstart.md) - Start using the REST API
+- [React SDK](react-sdk/index.md) - Integrate with React applications
+- [Wallet Kit Integration](developer-guide/wallet-kit-quick-integration.md) - Connect Stellar wallets
+- [Testnet Setup](stellar-network/trustlines/testnet-tokens.md) - Get started on testnet
