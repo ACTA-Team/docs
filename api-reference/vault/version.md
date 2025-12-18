@@ -13,7 +13,7 @@ Retrieve the contract version. This is a read-only operation that does not requi
 ### Request Example
 
 ```
-GET /vault/version?vaultContractId=CDK642PLEPCQH7WUBLHYYSKRJZOUIRIPY7GXQRHOETGR2JJ76UK6SWLZ
+GET /vault/version?vaultContractId=CDDSCINR7TJABVROJFLSZWOFCGXVZWQQUF22C6FIHUQ2JTSTBJNV7ABO
 ```
 
 ### Response
@@ -36,4 +36,3 @@ GET /vault/version?vaultContractId=CDK642PLEPCQH7WUBLHYYSKRJZOUIRIPY7GXQRHOETGR2
 - This is a read-only operation (no signature required)
 - Uses transaction simulation to read data from the blockchain
 - No transaction is submitted to the network
-

@@ -13,7 +13,7 @@ Retrieve the contract version. This is a read-only operation that does not requi
 ### Request Example
 
 ```
-GET /issuance/version?issuanceContractId=CABQIR63YVKUBRSTEZFCXKJAR43PNF27WL2TAU67U5YMNABKZEWPHRDN
+GET /issuance/version?issuanceContractId=CDNODJZ6WVTAJHY2DVVQSCGV35TR3276L4S4NLMR33X5NTLASC4K62L7
 ```
 
 ### Response
@@ -36,4 +36,3 @@ GET /issuance/version?issuanceContractId=CABQIR63YVKUBRSTEZFCXKJAR43PNF27WL2TAU6
 - This is a read-only operation (no signature required)
 - Uses transaction simulation to read data from the blockchain
 - No transaction is submitted to the network
-
