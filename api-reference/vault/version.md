@@ -13,7 +13,7 @@ Retrieve the contract version. This is a read-only operation that does not requi
 ### Request Example
 
 ```
-GET /vault/version?vaultContractId=CDDSCINR7TJABVROJFLSZWOFCGXVZWQQUF22C6FIHUQ2JTSTBJNV7ABO
+GET /vault/version?vaultContractId=CBP2ACV26B64KEUF7ROAXMNTPA4TB3MQWS45GAHOF34KPIZIMFKQIEVW
 ```
 
 ### Response
